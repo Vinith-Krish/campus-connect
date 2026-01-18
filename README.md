@@ -375,7 +375,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For issues or questions:
 - Open an issue on GitHub
-- Email: support@campusconnect.com
+- Email: vinithkrishna20@gmail.com
 
 ---
 

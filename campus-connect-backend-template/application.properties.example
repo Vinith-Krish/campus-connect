@@ -1,0 +1,29 @@
+# Server Configuration
+server.port=8080
+
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/campus_connect
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# JWT Configuration
+jwt.secret=REPLACE_WITH_YOUR_256_BIT_SECRET_KEY
+jwt.expiration=86400000
+
+# Logging
+logging.level.org.springframework.security=DEBUG
+logging.level.com.yourpackage=DEBUG
+
+# File Upload Configuration (if needed)
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# CORS Configuration (update with your frontend URL)
+cors.allowed.origins=http://localhost:5173
