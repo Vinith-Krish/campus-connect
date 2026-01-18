@@ -1,1 +1,19 @@
+# Frontend
 node_modules
+
+# Backend
+campus-connect-backend/target/
+campus-connect-backend/.settings/
+campus-connect-backend/.classpath
+campus-connect-backend/.project
+campus-connect-backend/bin/
+
+# Sensitive configuration files - DO NOT COMMIT
+campus-connect-backend/src/main/resources/application.properties
+campus-connect-backend/src/main/resources/application-*.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
