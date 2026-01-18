@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
+import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
 import {
   Calendar,
@@ -17,46 +18,16 @@ import {
   Tag,
 } from 'lucide-react';
 
-// Mock event data
-const mockEvent = {
-  id: '1',
-  title: 'Hackathon 2024: Build the Future',
-  description: `Join us for an exciting 24-hour coding marathon where you'll build innovative solutions to real-world problems!
-
-This hackathon brings together the brightest minds from universities across the country to collaborate, innovate, and create.
-
-**What to expect:**
-- Hands-on coding experience
-- Mentorship from industry experts
-- Networking opportunities
-- Amazing prizes worth $10,000
-- Free food and swag
-
-**Who should attend:**
-- Students passionate about technology
-- Aspiring entrepreneurs
-- Anyone looking to learn and build
-
-Don't miss this opportunity to showcase your skills and make connections that could shape your future!`,
-  date: '2024-02-15',
-  time: '09:00 AM',
-  venue: 'Engineering Block, Hall A',
-  category: 'Tech',
-  collegeName: 'MIT University',
-  organizerName: 'Tech Club',
-  organizerEmail: 'tech@mit.edu',
-  registeredCount: 156,
-};
-
 const categoryColors = {
-  Tech: 'bg-primary/10 text-primary',
-  Cultural: 'bg-accent/10 text-accent',
-  Sports: 'bg-success/10 text-success',
-  Workshop: 'bg-secondary text-secondary-foreground',
+  Tech: 'bg-blue-500 text-white',
+  Cultural: 'bg-rose-500 text-white',
+  Sports: 'bg-green-500 text-white',
+  Workshop: 'bg-amber-500 text-white',
 };
 
 const EventDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
@@ -69,13 +40,16 @@ const EventDetails = () => {
     const fetchEvent = async () => {
       setIsLoading(true);
       try {
-        // const data = await eventService.getEventById(id!);
-        // setEvent(data);
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setEvent(mockEvent);
+        const data = await eventService.getEventById(id);
+        setEvent(data);
       } catch (error) {
         console.error('Failed to fetch event:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load event details',
+          variant: 'destructive',
+        });
+        navigate('/events');
       } finally {
         setIsLoading(false);
       }
@@ -84,7 +58,7 @@ const EventDetails = () => {
     if (id) {
       fetchEvent();
     }
-  }, [id]);
+  }, [id, navigate, toast]);
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
@@ -93,14 +67,17 @@ const EventDetails = () => {
         description: 'Please login to register for events',
         variant: 'destructive',
       });
+      navigate('/login', { state: { from: { pathname: `/events/${id}` } } });
       return;
     }
 
     setActionLoading(true);
     try {
-      // await eventService.registerForEvent(id!);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await eventService.registerForEvent(id);
       setIsRegistered(true);
+      // Refresh event data to update registered count
+      const data = await eventService.getEventById(id);
+      setEvent(data);
       toast({
         title: 'Registration Successful!',
         description: 'You have been registered for this event.',
@@ -108,7 +85,7 @@ const EventDetails = () => {
     } catch (error) {
       toast({
         title: 'Registration Failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.response?.data?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -128,8 +105,7 @@ const EventDetails = () => {
 
     setActionLoading(true);
     try {
-      // await eventService.markInterested(id!);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await eventService.markInterested(id);
       setIsInterested(!isInterested);
       toast({
         title: isInterested ? 'Removed from interests' : 'Marked as interested!',
@@ -212,7 +188,7 @@ const EventDetails = () => {
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
                 {event.title}
               </h1>
-              <p className="mt-2 text-lg text-muted-foreground">{event.collegeName}</p>
+              <p className="mt-2 text-lg text-muted-foreground">{event.collegename}</p>
             </div>
 
             {/* Description */}

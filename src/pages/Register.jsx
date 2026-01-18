@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap } from 'lucide-react';
+import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [collegename, setCollegename] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('STUDENT');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -20,7 +23,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!name.trim() || !email.trim() || !password.trim()) {
+    if (!name.trim() || !email.trim() || !collegename.trim() || !password.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all fields',
@@ -40,20 +43,11 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      // Mock registration - replace with actual API call
-      // const response = await authService.register({ name, email, password, role });
-      
-      const mockUser = {
-        id: '1',
-        email,
-        name,
-        role,
-      };
-      
-      login('mock-jwt-token', mockUser);
+      const response = await authService.register({ name, email, collegename, password, role });
+      login(response.token, response.user);
       
       toast({
-        title: 'Welcome to CampusEvents!',
+        title: 'Welcome to CampusConnect!',
         description: 'Your account has been created successfully.',
       });
       
@@ -61,7 +55,7 @@ const Register = () => {
     } catch (error) {
       toast({
         title: 'Registration Failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.response?.data?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -97,7 +91,7 @@ const Register = () => {
               <Calendar className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors">
-              CampusEvents
+              CampusConnect
             </span>
           </Link>
 
@@ -146,6 +140,24 @@ const Register = () => {
             </div>
 
             <div>
+              <label htmlFor="collegename" className="block text-sm font-medium text-foreground mb-2">
+                College Name
+              </label>
+              <div className="relative">
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="collegename"
+                  type="text"
+                  placeholder="Your College or University Name"
+                  value={collegename}
+                  onChange={(e) => setCollegename(e.target.value)}
+                  className="pl-12"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                 Password
               </label>
@@ -153,13 +165,20 @@ const Register = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Minimum 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12"
+                  className="pl-12 pr-12"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
