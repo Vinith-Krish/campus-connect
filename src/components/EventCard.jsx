@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, Users, Tag } from 'lucide-react';
 
 const categoryColors = {
-  Tech: 'bg-primary/10 text-primary',
-  Cultural: 'bg-accent/10 text-accent',
-  Sports: 'bg-success/10 text-success',
-  Workshop: 'bg-secondary text-secondary-foreground',
+  Tech: 'bg-blue-500 text-white',
+  Cultural: 'bg-rose-500 text-white',
+  Sports: 'bg-green-500 text-white',
+  Workshop: 'bg-amber-500 text-white',
 };
 
 const EventCard = ({ event }) => {
@@ -43,7 +43,7 @@ const EventCard = ({ event }) => {
             {event.title}
           </h3>
           
-          <p className="mt-1 text-sm text-muted-foreground">{event.collegeName}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{event.collegename}</p>
 
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

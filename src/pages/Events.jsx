@@ -3,89 +3,8 @@ import Navbar from '../components/Navbar';
 import EventCard from '../components/EventCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
+import { eventService } from '../services/eventService';
 import { Calendar, Loader2 } from 'lucide-react';
-
-// Mock data for demo
-const mockEvents = [
-  {
-    id: '1',
-    title: 'Hackathon 2024: Build the Future',
-    description: 'Join us for a 24-hour coding marathon',
-    date: '2024-02-15',
-    time: '09:00 AM',
-    venue: 'Engineering Block, Hall A',
-    category: 'Tech',
-    collegeName: 'MIT University',
-    organizerName: 'Tech Club',
-    organizerEmail: 'tech@mit.edu',
-    registeredCount: 156,
-  },
-  {
-    id: '2',
-    title: 'Spring Cultural Festival',
-    description: 'Annual cultural extravaganza featuring music, dance, and art',
-    date: '2024-02-20',
-    time: '06:00 PM',
-    venue: 'Open Air Theatre',
-    category: 'Cultural',
-    collegeName: 'Stanford Arts College',
-    organizerName: 'Cultural Committee',
-    organizerEmail: 'culture@stanford.edu',
-    registeredCount: 320,
-  },
-  {
-    id: '3',
-    title: 'Inter-College Basketball Championship',
-    description: 'Annual basketball tournament featuring top college teams',
-    date: '2024-02-18',
-    time: '10:00 AM',
-    venue: 'Sports Complex',
-    category: 'Sports',
-    collegeName: 'UCLA',
-    organizerName: 'Sports Council',
-    organizerEmail: 'sports@ucla.edu',
-    registeredCount: 85,
-  },
-  {
-    id: '4',
-    title: 'AI/ML Workshop: From Basics to Production',
-    description: 'Hands-on workshop covering machine learning fundamentals',
-    date: '2024-02-22',
-    time: '02:00 PM',
-    venue: 'Computer Science Lab',
-    category: 'Workshop',
-    collegeName: 'Carnegie Mellon',
-    organizerName: 'AI Society',
-    organizerEmail: 'ai@cmu.edu',
-    registeredCount: 64,
-  },
-  {
-    id: '5',
-    title: 'Startup Pitch Competition',
-    description: 'Present your startup ideas to investors and mentors',
-    date: '2024-02-25',
-    time: '11:00 AM',
-    venue: 'Business School Auditorium',
-    category: 'Tech',
-    collegeName: 'Harvard Business School',
-    organizerName: 'Entrepreneurship Cell',
-    organizerEmail: 'ecell@hbs.edu',
-    registeredCount: 42,
-  },
-  {
-    id: '6',
-    title: 'Dance Workshop: Contemporary Fusion',
-    description: 'Learn contemporary dance techniques with professional choreographers',
-    date: '2024-02-28',
-    time: '04:00 PM',
-    venue: 'Dance Studio, Building C',
-    category: 'Cultural',
-    collegeName: 'Juilliard',
-    organizerName: 'Dance Club',
-    organizerEmail: 'dance@juilliard.edu',
-    registeredCount: 28,
-  },
-];
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -95,47 +14,26 @@ const Events = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call - replace with actual API call
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
-        // const data = await eventService.getAllEvents();
-        // setEvents(data);
-        
-        // Using mock data for demo
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setEvents(mockEvents);
+        const data = await eventService.getAllEvents(searchQuery, selectedCategory !== 'All' ? selectedCategory : '');
+        setEvents(data || []);
       } catch (error) {
         console.error('Failed to fetch events:', error);
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchEvents();
-  }, []);
+  }, [searchQuery, selectedCategory]);
 
   useEffect(() => {
-    let result = events;
-
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (event) =>
-          event.title.toLowerCase().includes(query) ||
-          event.collegeName.toLowerCase().includes(query) ||
-          event.venue.toLowerCase().includes(query)
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'All') {
-      result = result.filter((event) => event.category === selectedCategory);
-    }
-
-    setFilteredEvents(result);
-  }, [events, searchQuery, selectedCategory]);
+    // Events are already filtered by the API, just set them
+    setFilteredEvents(events);
+  }, [events]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -157,6 +55,7 @@ const Events = () => {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search by event name, college, or venue..."
+              isLoading={isLoading}
             />
             <CategoryFilter
               selectedCategory={selectedCategory}
@@ -193,10 +92,12 @@ const Events = () => {
           <div className="text-center py-20">
             <Calendar className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
             <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-              No events found
+              {searchQuery || selectedCategory !== 'All' ? 'No events found' : 'No events yet'}
             </h3>
             <p className="text-muted-foreground">
-              Try adjusting your search or filter criteria
+              {searchQuery || selectedCategory !== 'All' 
+                ? 'Try adjusting your search or filter criteria'
+                : 'Check back later for upcoming events'}
             </p>
           </div>
         )}

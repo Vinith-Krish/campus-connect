@@ -1,12 +1,14 @@
 import axiosInstance from './axiosInstance';
 
 export const eventService = {
-  getAllEvents: async (search, category) => {
+  getAllEvents: async (search = '', category = '') => {
+    let url = '/events';
     const params = new URLSearchParams();
     if (search) params.append('search', search);
-    if (category && category !== 'All') params.append('category', category);
+    if (category) params.append('category', category.toUpperCase());
+    if (params.toString()) url += `?${params}`;
     
-    const response = await axiosInstance.get(`/events?${params.toString()}`);
+    const response = await axiosInstance.get(url);
     return response.data;
   },
 
@@ -15,16 +17,30 @@ export const eventService = {
     return response.data;
   },
 
-  createEvent: async (data) => {
-    const response = await axiosInstance.post('/events', data);
+  createEvent: async (eventData) => {
+    const payload = {
+      ...eventData,
+      category: eventData.category.toUpperCase()
+    };
+    const response = await axiosInstance.post('/events', payload);
     return response.data;
   },
 
   registerForEvent: async (eventId) => {
-    await axiosInstance.post(`/events/${eventId}/register`);
+    const response = await axiosInstance.post(`/events/${eventId}/register`);
+    return response.data;
+  },
+
+  unregisterFromEvent: async (eventId) => {
+    await axiosInstance.delete(`/events/${eventId}/unregister`);
   },
 
   markInterested: async (eventId) => {
-    await axiosInstance.post(`/events/${eventId}/interested`);
+    const response = await axiosInstance.post(`/events/${eventId}/interested`);
+    return response.data;
   },
+
+  deleteEvent: async (eventId) => {
+    await axiosInstance.delete(`/events/${eventId}`);
+  }
 };

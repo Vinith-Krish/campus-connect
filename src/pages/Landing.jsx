@@ -135,7 +135,7 @@ const Landing = () => {
                 Ready to Discover?
               </h2>
               <p className="text-primary-foreground/80 max-w-xl mx-auto mb-8 text-lg">
-                Join thousands of students exploring campus events. 
+                Join thousands of students exploring campus connect. 
                 Sign up now and never miss an opportunity.
               </p>
               <Button variant="heroOutline" size="xl" asChild>
@@ -158,11 +158,11 @@ const Landing = () => {
                 <Calendar className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="font-display text-xl font-bold text-foreground">
-                CampusEvents
+                CampusConnect
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 CampusEvents. Made for students, by students.
+              © 2026 CampusConnect All Rights Reserved.
             </p>
           </div>
         </div>

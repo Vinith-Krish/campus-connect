@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
 import {
   Calendar,
@@ -13,6 +14,7 @@ import {
   Tag,
   Loader2,
   ArrowRight,
+  GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +31,7 @@ const CreateEvent = () => {
     time: '',
     venue: '',
     category: '',
+    collegename: '',
   });
 
   const handleInputChange = (e) => {
@@ -46,7 +49,7 @@ const CreateEvent = () => {
     // Validation
     if (!formData.title.trim() || !formData.description.trim() || 
         !formData.date || !formData.time || !formData.venue.trim() || 
-        !formData.category) {
+        !formData.category || !formData.collegename.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all fields',
@@ -57,19 +60,18 @@ const CreateEvent = () => {
 
     setIsLoading(true);
     try {
-      // const response = await eventService.createEvent(formData as CreateEventData);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const event = await eventService.createEvent(formData);
       
       toast({
         title: 'Event Created!',
         description: 'Your event has been successfully created.',
       });
       
-      navigate('/events');
+      navigate(`/events/${event.id}`);
     } catch (error) {
       toast({
         title: 'Creation Failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.response?.data?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -181,6 +183,26 @@ const CreateEvent = () => {
                   type="text"
                   placeholder="Enter event venue"
                   value={formData.venue}
+                  onChange={handleInputChange}
+                  className="pl-12"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* College Name */}
+            <div>
+              <label htmlFor="collegename" className="block text-sm font-medium text-foreground mb-2">
+                College Name
+              </label>
+              <div className="relative">
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="collegename"
+                  name="collegename"
+                  type="text"
+                  placeholder="Enter your college name"
+                  value={formData.collegename}
                   onChange={handleInputChange}
                   className="pl-12"
                   required

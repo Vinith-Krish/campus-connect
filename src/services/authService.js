@@ -1,14 +1,14 @@
 import axiosInstance from './axiosInstance';
 
 export const authService = {
-  login: async (credentials) => {
-    const response = await axiosInstance.post('/auth/login', credentials);
-    return response.data;
+  register: async (userData) => {
+    const response = await axiosInstance.post('/auth/register', userData);
+    return response.data; // { token, user }
   },
 
-  register: async (data) => {
-    const response = await axiosInstance.post('/auth/register', data);
-    return response.data;
+  login: async (credentials) => {
+    const response = await axiosInstance.post('/auth/login', credentials);
+    return response.data; // { token, user }
   },
 
   logout: () => {
@@ -16,15 +16,20 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
-  getCurrentUser: () => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      return JSON.parse(userStr);
-    }
-    return null;
+  forgotPassword: async (email) => {
+    const response = await axiosInstance.post('/auth/forgot-password', { email });
+    return response.data; // { message }
   },
 
-  isAuthenticated: () => {
-    return !!localStorage.getItem('token');
+  resetPassword: async (token, newPassword) => {
+    const response = await axiosInstance.post('/auth/reset-password', { token, newPassword });
+    return response.data; // { message }
   },
+
+  getCurrentUser: () => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  },
+
+  isAuthenticated: () => !!localStorage.getItem('token')
 };

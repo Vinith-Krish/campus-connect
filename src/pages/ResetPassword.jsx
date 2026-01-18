@@ -1,28 +1,27 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Calendar, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-
-  const from = location.state?.from?.pathname || '/events';
+  
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
+    if (!newPassword.trim() || !confirmPassword.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all fields',
@@ -31,21 +30,47 @@ const Login = () => {
       return;
     }
 
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Validation Error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: 'Validation Error',
+        description: 'Passwords do not match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!token) {
+      toast({
+        title: 'Invalid Link',
+        description: 'Reset token is missing. Please request a new password reset.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await authService.login({ email, password });
-      login(response.token, response.user);
+      await authService.resetPassword(token, newPassword);
       
       toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
+        title: 'Password Reset Successful!',
+        description: 'You can now login with your new password.',
       });
       
-      navigate(from, { replace: true });
+      navigate('/login');
     } catch (error) {
       toast({
-        title: 'Login Failed',
-        description: error.response?.data?.message || 'Invalid email or password. Please try again.',
+        title: 'Reset Failed',
+        description: error.response?.data?.message || 'Failed to reset password. The link may have expired.',
         variant: 'destructive',
       });
     } finally {
@@ -68,43 +93,25 @@ const Login = () => {
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground">
-            Welcome back
+            Reset your password
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Sign in to continue exploring campus events
+            Enter your new password below
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                Email address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@university.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-                Password
+              <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-2">
+                New Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  id="password"
+                  id="newPassword"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   className="pl-12 pr-12"
                   required
                 />
@@ -116,10 +123,30 @@ const Login = () => {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              <div className="mt-2 text-right">
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </Link>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-12 pr-12"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
@@ -128,7 +155,7 @@ const Login = () => {
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent" />
               ) : (
                 <>
-                  Sign In
+                  Reset Password
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}
@@ -136,14 +163,10 @@ const Login = () => {
           </form>
 
           <p className="mt-8 text-center text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:underline">
-              Sign up
+            Remember your password?{' '}
+            <Link to="/login" className="text-primary font-semibold hover:underline">
+              Sign in
             </Link>
-          </p>
-
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Demo: Use any email with "admin" to login as Club Admin
           </p>
         </div>
       </div>
@@ -154,14 +177,13 @@ const Login = () => {
         
         <div className="relative text-center text-primary-foreground">
           <div className="w-24 h-24 rounded-2xl bg-primary-foreground/20 backdrop-blur flex items-center justify-center mx-auto mb-8 animate-float">
-            <Calendar className="h-12 w-12" />
+            <Lock className="h-12 w-12" />
           </div>
           <h2 className="font-display text-4xl font-bold mb-4">
-            Connect with Campus
+            Secure Password Reset
           </h2>
           <p className="text-primary-foreground/80 max-w-md text-lg">
-            Discover events from 50+ colleges. Join workshops, hackathons, 
-            cultural fests, and more.
+            Choose a strong password to keep your account safe and secure.
           </p>
         </div>
       </div>
@@ -169,4 +191,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;
