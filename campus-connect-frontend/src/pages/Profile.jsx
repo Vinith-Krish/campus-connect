@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import EventCard from '../components/EventCard';
+import RegisteredEventCard from '../components/RegisteredEventCard';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
+import { eventService } from '../services/eventService';
 import { User, Calendar, Heart, Loader2, GraduationCap, Users, Edit2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../components/ui/button';
@@ -12,9 +14,11 @@ import { useToast } from '../hooks/use-toast';
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('registered');
+  const isClubAdmin = user?.role === 'CLUB_ADMIN';
+  const [activeTab, setActiveTab] = useState(isClubAdmin ? 'created' : 'registered');
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [interestedEvents, setInterestedEvents] = useState([]);
+  const [createdEvents, setCreatedEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -28,20 +32,28 @@ const Profile = () => {
     const fetchUserEvents = async () => {
       setIsLoading(true);
       try {
-        const data = await userService.getMyEvents();
-        setRegisteredEvents(data.registered || []);
-        setInterestedEvents(data.interested || []);
+        if (isClubAdmin) {
+          // Fetch created events for club admin
+          const data = await eventService.getMyCreatedEvents();
+          setCreatedEvents(data || []);
+        } else {
+          // Fetch registered and interested events for students
+          const data = await userService.getMyEvents();
+          setRegisteredEvents(data.registered || []);
+          setInterestedEvents(data.interested || []);
+        }
       } catch (error) {
         console.error('Failed to fetch user events:', error);
         setRegisteredEvents([]);
         setInterestedEvents([]);
+        setCreatedEvents([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserEvents();
-  }, []);
+  }, [isClubAdmin]);
 
   useEffect(() => {
     if (user) {
@@ -88,7 +100,14 @@ const Profile = () => {
     }
   };
 
-  const currentEvents = activeTab === 'registered' ? registeredEvents : interestedEvents;
+  const handleUnregisterEvent = async (eventId) => {
+    // Remove the event from the local state
+    setRegisteredEvents(prev => prev.filter(event => event.id !== eventId));
+  };
+
+  const currentEvents = isClubAdmin 
+    ? createdEvents 
+    : (activeTab === 'registered' ? registeredEvents : interestedEvents);
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,48 +168,61 @@ const Profile = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-border">
-            <div className="text-center">
-              <div className="font-display text-3xl font-bold text-foreground">
-                {registeredEvents.length}
+            {isClubAdmin ? (
+              <div className="text-center col-span-2">
+                <div className="font-display text-3xl font-bold text-foreground">
+                  {createdEvents.length}
+                </div>
+                <div className="text-sm text-muted-foreground">Created Events</div>
               </div>
-              <div className="text-sm text-muted-foreground">Registered Events</div>
-            </div>
-            <div className="text-center">
-              <div className="font-display text-3xl font-bold text-foreground">
-                {interestedEvents.length}
-              </div>
-              <div className="text-sm text-muted-foreground">Interested Events</div>
-            </div>
+            ) : (
+              <>
+                <div className="text-center">
+                  <div className="font-display text-3xl font-bold text-foreground">
+                    {registeredEvents.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Registered Events</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-display text-3xl font-bold text-foreground">
+                    {interestedEvents.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Interested Events</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <button
-            onClick={() => setActiveTab('registered')}
-            className={cn(
-              'flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200',
-              activeTab === 'registered'
-                ? 'gradient-primary text-primary-foreground shadow-md'
-                : 'bg-card text-muted-foreground hover:text-foreground border border-border'
-            )}
-          >
-            <Calendar className="h-4 w-4" />
-            Registered
-          </button>
-          <button
-            onClick={() => setActiveTab('interested')}
-            className={cn(
-              'flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200',
-              activeTab === 'interested'
-                ? 'gradient-primary text-primary-foreground shadow-md'
-                : 'bg-card text-muted-foreground hover:text-foreground border border-border'
-            )}
-          >
-            <Heart className="h-4 w-4" />
-            Interested
-          </button>
-        </div>
+        {!isClubAdmin && (
+          <div className="flex gap-2 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <button
+              onClick={() => setActiveTab('registered')}
+              className={cn(
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200',
+                activeTab === 'registered'
+                  ? 'gradient-primary text-primary-foreground shadow-md'
+                  : 'bg-card text-muted-foreground hover:text-foreground border border-border'
+              )}
+            >
+              <Calendar className="h-4 w-4" />
+              Registered
+            </button>
+            <button
+              onClick={() => setActiveTab('interested')}
+              className={cn(
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200',
+                activeTab === 'interested'
+                  ? 'gradient-primary text-primary-foreground shadow-md'
+                  : 'bg-card text-muted-foreground hover:text-foreground border border-border'
+              )}
+            >
+              <Heart className="h-4 w-4" />
+              Interested
+            </button>
+          </div>
+        )}
 
         {/* Events Grid */}
         {isLoading ? (
@@ -205,13 +237,30 @@ const Profile = () => {
                 className="animate-slide-up"
                 style={{ animationDelay: `${(index + 2) * 0.1}s` }}
               >
-                <EventCard event={event} />
+                {!isClubAdmin && activeTab === 'registered' ? (
+                  <RegisteredEventCard 
+                    event={event} 
+                    onUnregister={handleUnregisterEvent}
+                  />
+                ) : (
+                  <EventCard event={event} />
+                )}
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-20 bg-card rounded-2xl border border-border">
-            {activeTab === 'registered' ? (
+            {isClubAdmin ? (
+              <>
+                <Calendar className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                  No events created yet
+                </h3>
+                <p className="text-muted-foreground">
+                  Events you create will appear here
+                </p>
+              </>
+            ) : activeTab === 'registered' ? (
               <>
                 <Calendar className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
                 <h3 className="font-display text-xl font-semibold text-foreground mb-2">

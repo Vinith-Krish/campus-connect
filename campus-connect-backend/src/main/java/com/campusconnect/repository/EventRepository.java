@@ -23,4 +23,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     	       "LOWER(e.venue) LIKE LOWER(CONCAT('%', :search, '%'))) " +
     	       "AND e.category = :category")
     	List<Event> findByTitleContainingIgnoreCaseAndCategory(@Param("search") String search, @Param("category") Category category);
+    	List<Event> findByCreatedByOrderByDateDesc(Long userId);
 }

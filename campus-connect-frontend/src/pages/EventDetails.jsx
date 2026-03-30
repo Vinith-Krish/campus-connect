@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Loader2,
   Tag,
+  Edit,
 } from 'lucide-react';
 
 const categoryColors = {
@@ -28,7 +29,7 @@ const categoryColors = {
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +94,29 @@ const EventDetails = () => {
     }
   };
 
+  const handleUnregister = async () => {
+    setActionLoading(true);
+    try {
+      await eventService.unregisterFromEvent(id);
+      setIsRegistered(false);
+      // Refresh event data to update registered count
+      const data = await eventService.getEventById(id);
+      setEvent(data);
+      toast({
+        title: 'Unregistered Successfully',
+        description: 'You have been unregistered from this event.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Unregister Failed',
+        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleInterested = async () => {
     if (!isAuthenticated) {
       toast({
@@ -100,6 +124,7 @@ const EventDetails = () => {
         description: 'Please login to mark interest in events',
         variant: 'destructive',
       });
+      navigate('/login', { state: { from: { pathname: `/events/${id}` } } });
       return;
     }
 
@@ -185,10 +210,24 @@ const EventDetails = () => {
 
             {/* Title */}
             <div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-                {event.title}
-              </h1>
-              <p className="mt-2 text-lg text-muted-foreground">{event.collegename}</p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+                    {event.title}
+                  </h1>
+                  <p className="mt-2 text-lg text-muted-foreground">{event.collegename}</p>
+                </div>
+                {user && user.id === event.organizerId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/events/${event.id}/edit`)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Description */}
@@ -252,10 +291,25 @@ const EventDetails = () => {
 
               <div className="mt-6 pt-6 border-t border-border space-y-3">
                 {isRegistered ? (
-                  <Button variant="secondary" className="w-full" size="lg" disabled>
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Registered
-                  </Button>
+                  <div className="space-y-2">
+                    <Button variant="secondary" className="w-full" size="lg" disabled>
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Registered
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                      size="lg"
+                      onClick={handleUnregister}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        'Unregister'
+                      )}
+                    </Button>
+                  </div>
                 ) : (
                   <Button
                     variant="hero"

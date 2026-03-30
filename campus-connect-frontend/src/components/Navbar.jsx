@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/events" className="flex items-center gap-2 group">
             <div className="p-2 rounded-xl gradient-primary">
               <Calendar className="h-5 w-5 text-primary-foreground" />
             </div>

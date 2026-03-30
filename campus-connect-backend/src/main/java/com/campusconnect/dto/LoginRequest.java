@@ -17,5 +17,7 @@ public class LoginRequest {
 	@NotBlank(message = "Password is required")
 	@Size(min = 6, message = "Password must be at least 6 characters")
 	private String password;
+	@NotBlank(message = "reCAPTCHA token is required")
+	private String recaptchaToken;
 
 }
