@@ -23,6 +23,7 @@ public class EventResponse {
 	private String venue;
 	private Category category;
 	private String collegename;
+	private Long organizerId;
 	private String organizerName;
 	private String organizerEmail;
 	private String imageUrl;
@@ -39,6 +40,7 @@ public class EventResponse {
 	        .venue(event.getVenue())
 	        .category(event.getCategory())
 	        .collegename(event.getCollegename())
+	        .organizerId(event.getCreatedBy())
 	        .organizerName(event.getOrganizerName())
 	        .organizerEmail(event.getOrganizerEmail())
 	        .imageUrl(event.getImageUrl())

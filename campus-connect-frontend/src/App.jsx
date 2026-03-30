@@ -34,6 +34,14 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route
+              path="/events/:id/edit"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/create-event"
               element={
                 <ProtectedRoute requireAdmin>

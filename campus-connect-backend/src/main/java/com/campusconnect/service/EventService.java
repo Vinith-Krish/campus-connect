@@ -166,5 +166,62 @@ public class EventService {
 	    
 	    eventRepository.delete(event);
 	}
+	// get events created by user (for club admin)
+	public List<EventResponse> getMyCreatedEvents(Long userId) {
+	    User user = userRepository.findById(userId)
+	        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	    
+	    if (user.getRole() != Role.CLUB_ADMIN) {
+	        throw new UnauthorizedException("Only club admins can access created events");
+	    }
+	    
+	    List<Event> events = eventRepository.findByCreatedByOrderByDateDesc(userId);
+	    
+	    return events.stream()
+	        .map(event -> {
+	            Long regCount = registrationRepository.countByEventId(event.getId());
+	            Long intCount = interestRepository.countByEventId(event.getId());
+	            return EventResponse.fromEntity(event, regCount, intCount);
+	        })
+	        .collect(Collectors.toList());
+	}
+	public EventResponse updateEvent(Long eventId, EventRequest request, Long userId) {
+	    Event event = eventRepository.findById(eventId)
+	        .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+	    
+	    // Verify user is the creator
+	    if (!event.getCreatedBy().equals(userId)) {
+	        throw new UnauthorizedException("You can only edit your own events");
+	    }
+	    
+	    // Update fields
+	    event.setTitle(request.getTitle());
+	    event.setDescription(request.getDescription());
+	    event.setDate(request.getDate());
+	    event.setTime(request.getTime());
+	    event.setVenue(request.getVenue());
+	    event.setCategory(request.getCategory());
+	    event.setImageUrl(request.getImageUrl());
+	    
+	    Event updated = eventRepository.save(event);
+	    
+	    Long regCount = registrationRepository.countByEventId(eventId);
+	    Long intCount = interestRepository.countByEventId(eventId);
+	    
+	    return EventResponse.fromEntity(updated, regCount, intCount);
+	}
+	public void unregisterUserFromEvent(Long eventId, String userEmail) {
+	    Event event = eventRepository.findById(eventId)
+	        .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+	    
+	    User user = userRepository.findByEmail(userEmail)
+	        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	    
+	    EventRegistration registration = registrationRepository
+	        .findByEventAndUser(event, user)
+	        .orElseThrow(() -> new BadRequestException("You are not registered for this event"));
+	    
+	    registrationRepository.delete(registration);
+	}
 
 }

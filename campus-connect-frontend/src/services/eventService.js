@@ -26,6 +26,15 @@ export const eventService = {
     return response.data;
   },
 
+  updateEvent: async (eventId, eventData) => {
+    const payload = {
+      ...eventData,
+      category: eventData.category.toUpperCase()
+    };
+    const response = await axiosInstance.put(`/events/${eventId}`, payload);
+    return response.data;
+  },
+
   registerForEvent: async (eventId) => {
     const response = await axiosInstance.post(`/events/${eventId}/register`);
     return response.data;
@@ -42,5 +51,10 @@ export const eventService = {
 
   deleteEvent: async (eventId) => {
     await axiosInstance.delete(`/events/${eventId}`);
+  },
+
+  getMyCreatedEvents: async () => {
+    const response = await axiosInstance.get('/events/my-events');
+    return response.data;
   }
 };

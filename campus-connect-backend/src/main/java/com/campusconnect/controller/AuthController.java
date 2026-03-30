@@ -1,5 +1,8 @@
 package com.campusconnect.controller;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,6 +18,7 @@ import com.campusconnect.service.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.campusconnect.service.RecaptchaService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,17 +26,26 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 	private final AuthService authService;
+	 @Autowired
+	    private RecaptchaService recaptchaService;
 	// endpoint for user registration
 	@PostMapping("/register")
-	public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-	    
+	public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+		 if (!recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body(Map.of("message", "reCAPTCHA verification failed"));
+	        }
 	    AuthResponse response = authService.register(request);
 	    return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	// endpoint for user login
 	@PostMapping("/login")
-	public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-	    
+	public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+		// Verify reCAPTCHA token
+		if (!recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body(Map.of("message", "reCAPTCHA verification failed"));
+	        }
 	    AuthResponse response = authService.login(request);
 	    return ResponseEntity.ok(response);
 	}

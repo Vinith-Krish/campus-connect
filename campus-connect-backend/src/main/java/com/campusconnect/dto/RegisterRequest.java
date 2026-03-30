@@ -26,5 +26,7 @@ public class RegisterRequest {
 	private String collegename;
 	@NotNull(message = "Role is required")
 	private Role role;
+	@NotBlank(message = "reCAPTCHA token is required")
+	private String recaptchaToken;
 
 }

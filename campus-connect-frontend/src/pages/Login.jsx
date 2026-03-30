@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
@@ -6,12 +6,14 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const recaptchaRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,9 +33,20 @@ const Login = () => {
       return;
     }
 
+    // Verify reCAPTCHA
+    const recaptchaToken = recaptchaRef.current?.getValue();
+    if (!recaptchaToken) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please complete the reCAPTCHA verification',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ email, password, recaptchaToken });
       login(response.token, response.user);
       
       toast({
@@ -43,6 +56,9 @@ const Login = () => {
       
       navigate(from, { replace: true });
     } catch (error) {
+      // Reset reCAPTCHA on error
+      recaptchaRef.current?.reset();
+      
       toast({
         title: 'Login Failed',
         description: error.response?.data?.message || 'Invalid email or password. Please try again.',
@@ -123,6 +139,15 @@ const Login = () => {
               </div>
             </div>
 
+            {/* reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                theme="light"
+              />
+            </div>
+
             <Button type="submit" variant="hero" className="w-full" size="lg" disabled={isLoading}>
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent" />
@@ -142,9 +167,9 @@ const Login = () => {
             </Link>
           </p>
 
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          {/* <p className="mt-4 text-center text-xs text-muted-foreground">
             Demo: Use any email with "admin" to login as Club Admin
-          </p>
+          </p> */}
         </div>
       </div>
 
