@@ -29,16 +29,6 @@ const CreateEvent = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [loadingEvent, setLoadingEvent] = useState(!!eventId);
   const isEditMode = !!eventId;
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    time: '',
-    venue: '',
-    category: '',
-    collegename: '',
-    imageUrl: '',
-  });
 
   // Load event data if in edit mode
   useEffect(() => {
@@ -143,18 +133,6 @@ const CreateEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation
-    if (!formData.title.trim() || !formData.description.trim() || 
-        !formData.date || !formData.time || !formData.venue.trim() || 
-        !formData.category || !formData.collegename.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsLoading(true);
     try {
