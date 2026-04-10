@@ -12,7 +12,7 @@ import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const { toast } = useToast();
   const isClubAdmin = user?.role === 'CLUB_ADMIN';
   const [activeTab, setActiveTab] = useState(isClubAdmin ? 'created' : 'registered');
@@ -69,36 +69,26 @@ const Profile = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveProfile = async () => {
-    if (!editFormData.name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Name is required',
-        variant: 'destructive',
-      });
-      return;
-    }
+ const handleSaveProfile = async () => {
+  if (!editFormData.name.trim()) return;
 
-    setIsUpdating(true);
-    try {
-      await userService.updateProfile(editFormData);
-      toast({
-        title: 'Profile Updated!',
-        description: 'Your profile has been updated successfully.',
-      });
-      setIsEditModalOpen(false);
-      // Refresh the page to show updated data
-      window.location.reload();
-    } catch (error) {
-      toast({
-        title: 'Update Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  setIsUpdating(true);
+  try {
+    const updated = await userService.updateProfile({ name: editFormData.name });
+    const token = localStorage.getItem("token");
+    login(token, updated); // update context and localStorage
+    toast({ title: "Profile Updated!", description: "Your profile has been updated successfully." });
+    setIsEditModalOpen(false);
+  } catch (error) {
+    toast({
+      title: "Update Failed",
+      description: error.response?.data?.message || "Something went wrong. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsUpdating(false);
+  }
+};
 
   const handleUnregisterEvent = async (eventId) => {
     // Remove the event from the local state

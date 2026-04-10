@@ -1,39 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import EventCard from '../components/EventCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { eventService } from '../services/eventService';
 import { Calendar, Loader2 } from 'lucide-react';
-
+import { useQuery } from "@tanstack/react-query";
 const Events = () => {
-  const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [isLoading, setIsLoading] = useState(true);
+  const { data = [], isLoading, isError } = useQuery({
+  queryKey: ["events", searchQuery, selectedCategory],
+  queryFn: () =>
+    eventService.getAllEvents(
+      searchQuery,
+      selectedCategory !== "All" ? selectedCategory : ""
+    ),
+  staleTime: 30_000,
+});
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setIsLoading(true);
-      try {
-        const data = await eventService.getAllEvents(searchQuery, selectedCategory !== 'All' ? selectedCategory : '');
-        setEvents(data || []);
-      } catch (error) {
-        console.error('Failed to fetch events:', error);
-        setEvents([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [searchQuery, selectedCategory]);
-
-  useEffect(() => {
-    // Events are already filtered by the API, just set them
-    setFilteredEvents(events);
-  }, [events]);
+  const filteredEvents = data;
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +53,11 @@ const Events = () => {
 
       {/* Events Grid */}
       <div className="container mx-auto px-4 py-12">
-        {isLoading ? (
+        {isError ? (
+          <div className="text-center py-20 text-destructive">
+            Failed to load events. Please try again.
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
