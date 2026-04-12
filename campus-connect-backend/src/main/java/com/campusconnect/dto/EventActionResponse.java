@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventActionResponse {
-	private String message;
-	private Long eventId;
-	private Long userId;
+    private String message;
+    private Long eventId;
+    private Long userId;
 
 }

@@ -32,6 +32,7 @@ public class RecaptchaService {
         this.restTemplate = new RestTemplate();
     }
     
+    @SuppressWarnings("unchecked")
     public boolean verifyRecaptcha(String recaptchaToken) {
         if (recaptchaToken == null || recaptchaToken.isEmpty()) {
             logger.warn("reCAPTCHA token is null or empty");

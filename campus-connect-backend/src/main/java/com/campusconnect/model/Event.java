@@ -30,39 +30,39 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class Event {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@Column(nullable = false)
-	private String title;
-	@Column(columnDefinition = "TEXT")
-	private String description;
-	@Column(nullable = false)
-	private String time;
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private Category category;
-	@Column(nullable = false)
-	private String venue;
-	@Column(nullable = false)
-	private LocalDate date;
-	@Column(nullable = false)
-	private String collegename;
-	@Column(nullable = false)
-	private String organizerName;
-	@Column(nullable = false)
-	private String organizerEmail;
-	@Column(nullable = true)
-	private String imageUrl;
-	@Column(name = "created_by", nullable = false)
-	private Long createdBy;
-	@CreationTimestamp
-	private LocalDateTime createdAt;
-	@UpdateTimestamp
-	private LocalDateTime updatedAt;
-	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<EventRegistration> registrations;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(nullable = false)
+    private String title;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    @Column(nullable = false)
+    private String time;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Category category;
+    @Column(nullable = false)
+    private String venue;
+    @Column(nullable = false)
+    private LocalDate date;
+    @Column(nullable = false)
+    private String collegename;
+    @Column(nullable = false)
+    private String organizerName;
+    @Column(nullable = false)
+    private String organizerEmail;
+    @Column(nullable = true)
+    private String imageUrl;
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventRegistration> registrations;
 
-	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<EventInterest> interests;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventInterest> interests;
 }

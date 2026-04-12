@@ -2,6 +2,7 @@ package com.campusconnect.config;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,8 @@ public class SecurityConfig {
 	//private final JwtAuthenticationFilter jwtAuthFilter;
 	//private final AuthenticationProvider authenticationProvider;
 	private final UserRepository userRepository;
+	@Value("${cors.allowed-origins}")
+	private String allowedOrigins;
 
     // CORS configuration source bean
 	@Bean
@@ -87,22 +90,21 @@ public class SecurityConfig {
 	    
 	    return http.build();
 	}
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        // Description: Configure CORS settings
-        // Returns: CorsConfigurationSource bean
-        
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
-        return source;
-    }
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+	            .map(String::trim)
+	            .toList());
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	    configuration.setAllowedHeaders(Arrays.asList("*"));
+	    configuration.setAllowCredentials(true);
+	    configuration.setMaxAge(3600L);
+
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/api/**", configuration);
+	    return source;
+	}
     @Bean
     AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, 
                                                          PasswordEncoder passwordEncoder) {

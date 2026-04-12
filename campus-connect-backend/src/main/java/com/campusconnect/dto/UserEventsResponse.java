@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class UserEventsResponse {
-	private List<EventResponse> registered;
-	private List<EventResponse> interested;
+    private List<EventResponse> registered;
+    private List<EventResponse> interested;
 }
