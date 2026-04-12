@@ -23,16 +23,16 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "event_interests", uniqueConstraints = @UniqueConstraint(columnNames = {"event_id", "user_id"}))
 public class EventInterest {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "event_id")
-	private Event event;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private User user;
-	@CreationTimestamp
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime interestedAt;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id")
+    private Event event;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime interestedAt;
 }

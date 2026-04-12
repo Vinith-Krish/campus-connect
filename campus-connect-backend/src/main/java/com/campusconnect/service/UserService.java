@@ -19,18 +19,21 @@ import com.campusconnect.repository.EventRepository;
 import com.campusconnect.repository.UserRepository;
 import com.campusconnect.dto.UserEventsResponse;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class UserService {
-	private final UserRepository userRepository;
-	private final EventRepository eventRepository;
-	private final EventRegistrationRepository registrationRepository;
-	private final EventInterestRepository interestRepository;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private EventRepository eventRepository;
+	@Autowired
+	private EventRegistrationRepository registrationRepository;
+	@Autowired
+	private EventInterestRepository interestRepository;
 	public UserEventsResponse getMyEvents(Long userId) {
 	    // Verify user exists
 	    User user = userRepository.findById(userId)
@@ -69,21 +72,13 @@ public class UserService {
 	    
 	    return UserDTO.fromEntity(user);
 	}
-	@Transactional
-	public UserDTO updateUserProfile(Long userId, String name) {
-	    // Description: Update user profile information
-	    // Parameters: user ID and new name
-	    // Returns: Updated UserDTO
-	    // Throws: ResourceNotFoundException if user not found
-	    
-	    User user = userRepository.findById(userId)
-	        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-	    
-	    user.setName(name);
-	    User updatedUser = userRepository.save(user);
-	    
-	    return UserDTO.fromEntity(updatedUser);
-	}
+	public UserDTO updateUserProfile(String userEmail, String name) {
+		User user = userRepository.findByEmail(userEmail)
+		.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		user.setName(name);
+		User updatedUser = userRepository.save(user);
+		return UserDTO.fromEntity(updatedUser);
+		}
 
 
 }

@@ -2,6 +2,7 @@ package com.campusconnect.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.campusconnect.dto.AuthResponse;
 import com.campusconnect.dto.LoginRequest;
@@ -9,19 +10,20 @@ import com.campusconnect.dto.RegisterRequest;
 import com.campusconnect.dto.UserDTO;
 import com.campusconnect.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.campusconnect.exception.BadRequestException;
 import com.campusconnect.exception.UnauthorizedException;
 import com.campusconnect.model.User;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AuthService {
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtService jwtService;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private JwtService jwtService;
 
 	public AuthResponse register(RegisterRequest request) {
 		// check if email already exists

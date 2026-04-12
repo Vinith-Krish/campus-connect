@@ -3,7 +3,8 @@ package com.campusconnect.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,20 +12,23 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.campusconnect.dto.UpdateProfileRequest;
 import com.campusconnect.dto.UserDTO;
 import com.campusconnect.dto.UserEventsResponse;
 import com.campusconnect.service.JwtService;
 import com.campusconnect.service.UserService;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
-	private final UserService userService;
-	private final JwtService jwtService;
+	@Autowired
+	private UserService userService;
+	@Autowired
+	private JwtService jwtService;
 	// get my events
 	@GetMapping("/me/events")
 	public ResponseEntity<UserEventsResponse> getMyEvents(
@@ -50,15 +54,10 @@ public class UserController {
 	}
 	@PutMapping("/me")
 	public ResponseEntity<UserDTO> updateProfile(
-	        @RequestBody Map<String, String> updates,
-	        @RequestHeader("Authorization") String authHeader) {
-	    
-	    // Extract user ID from JWT token
-	    String token = authHeader.substring(7);
-	    Long userId = jwtService.extractUserId(token);
-	    
-	    String newName = updates.get("name");
-	    UserDTO updatedUser = userService.updateUserProfile(userId, newName);
+	        @Valid @RequestBody UpdateProfileRequest request,
+	        @AuthenticationPrincipal UserDetails userDetails) {
+
+	    UserDTO updatedUser = userService.updateUserProfile(userDetails.getUsername(), request.getName());
 	    return ResponseEntity.ok(updatedUser);
 	}
 }
