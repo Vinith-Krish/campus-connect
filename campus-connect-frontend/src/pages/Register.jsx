@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useGoogleReCaptcha } from '@react-recaptcha-v3/react';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -19,6 +20,7 @@ const Register = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +45,17 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      const response = await authService.register({ name, email, collegename, password, role });
+      // Execute reCAPTCHA
+      const token = await executeRecaptcha('register');
+
+      const response = await authService.register({ 
+        name, 
+        email, 
+        collegename, 
+        password, 
+        role,
+        recaptchaToken: token
+      });
       login(response.token, response.user);
       
       toast({
@@ -99,10 +111,10 @@ const Register = () => {
             Create an account
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Start discovering amazing campus events today
+            Join thousands of students exploring campus events
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                 Full name
@@ -141,14 +153,14 @@ const Register = () => {
 
             <div>
               <label htmlFor="collegename" className="block text-sm font-medium text-foreground mb-2">
-                College Name
+                College name
               </label>
               <div className="relative">
                 <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="collegename"
                   type="text"
-                  placeholder="Your College or University Name"
+                  placeholder="MIT"
                   value={collegename}
                   onChange={(e) => setCollegename(e.target.value)}
                   className="pl-12"
@@ -165,11 +177,11 @@ const Register = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Minimum 6 characters"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12"
+                  className="pl-12 pr-10"
                   required
                 />
                 <button
@@ -177,67 +189,51 @@ const Register = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Must be at least 6 characters
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
-                I am a...
+              <label htmlFor="role" className="block text-sm font-medium text-foreground mb-2">
+                Role
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('STUDENT')}
-                  className={cn(
-                    'p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
-                    role === 'STUDENT'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-muted-foreground'
-                  )}
-                >
-                  <GraduationCap className={cn('h-6 w-6', role === 'STUDENT' ? 'text-primary' : 'text-muted-foreground')} />
-                  <span className={cn('font-medium', role === 'STUDENT' ? 'text-foreground' : 'text-muted-foreground')}>
-                    Student
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('CLUB_ADMIN')}
-                  className={cn(
-                    'p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
-                    role === 'CLUB_ADMIN'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-muted-foreground'
-                  )}
-                >
-                  <Users className={cn('h-6 w-6', role === 'CLUB_ADMIN' ? 'text-primary' : 'text-muted-foreground')} />
-                  <span className={cn('font-medium', role === 'CLUB_ADMIN' ? 'text-foreground' : 'text-muted-foreground')}>
-                    Club Admin
-                  </span>
-                </button>
-              </div>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="STUDENT">Student</option>
+                <option value="CLUB_ADMIN">Club Admin</option>
+              </select>
             </div>
 
-            <Button type="submit" variant="accent" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-foreground border-t-transparent" />
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Create account'}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
 
-          <p className="mt-8 text-center text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
+            <Link to="/login" className="font-semibold text-primary hover:underline">
               Sign in
             </Link>
           </p>
+
+          <div className="mt-8 text-xs text-muted-foreground text-center">
+            This site is protected by reCAPTCHA and the Google
+            <a href="https://policies.google.com/privacy" className="hover:underline"> Privacy Policy</a> and
+            <a href="https://policies.google.com/terms" className="hover:underline"> Terms of Service</a> apply.
+          </div>
         </div>
       </div>
     </div>

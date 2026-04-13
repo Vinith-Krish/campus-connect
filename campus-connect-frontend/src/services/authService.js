@@ -1,14 +1,14 @@
-import axiosInstance from './axiosInstance';
+import axios from './axiosInstance';
 
 export const authService = {
-  register: async (userData) => {
-    const response = await axiosInstance.post('/auth/register', userData);
-    return response.data; // { token, user }
+  login: async (loginData) => {
+    const response = await axios.post('/auth/login', loginData);
+    return response.data;
   },
 
-  login: async (credentials) => {
-    const response = await axiosInstance.post('/auth/login', credentials);
-    return response.data; // { token, user }
+  register: async (registerData) => {
+    const response = await axios.post('/auth/register', registerData);
+    return response.data;
   },
 
   logout: () => {
@@ -16,20 +16,6 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
-  forgotPassword: async (email) => {
-    const response = await axiosInstance.post('/auth/forgot-password', { email });
-    return response.data; // { message }
-  },
-
-  resetPassword: async (token, newPassword) => {
-    const response = await axiosInstance.post('/auth/reset-password', { token, newPassword });
-    return response.data; // { message }
-  },
-
-  getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
-
-  isAuthenticated: () => !!localStorage.getItem('token')
+  getToken: () => localStorage.getItem('token'),
+  getUser: () => JSON.parse(localStorage.getItem('user') || '{}'),
 };
