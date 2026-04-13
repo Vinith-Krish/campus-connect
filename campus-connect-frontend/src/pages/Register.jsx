@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
@@ -7,7 +7,6 @@ import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '@/lib/utils';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -17,7 +16,6 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('STUDENT');
   const [isLoading, setIsLoading] = useState(false);
-  const recaptchaRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,20 +41,9 @@ const Register = () => {
       return;
     }
 
-    // Verify reCAPTCHA
-    const recaptchaToken = recaptchaRef.current?.getValue();
-    if (!recaptchaToken) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please complete the reCAPTCHA verification',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const response = await authService.register({ name, email, collegename, password, role, recaptchaToken });
+      const response = await authService.register({ name, email, collegename, password, role });
       login(response.token, response.user);
       
       toast({
@@ -66,9 +53,6 @@ const Register = () => {
       
       navigate('/events', { replace: true });
     } catch (error) {
-      // Reset reCAPTCHA on error
-      recaptchaRef.current?.reset();
-      
       toast({
         title: 'Registration Failed',
         description: error.response?.data?.message || 'Something went wrong. Please try again.',
@@ -234,15 +218,6 @@ const Register = () => {
                   </span>
                 </button>
               </div>
-            </div>
-
-            {/* reCAPTCHA */}
-            <div className="flex justify-center">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                theme="light"
-              />
             </div>
 
             <Button type="submit" variant="accent" className="w-full" size="lg" disabled={isLoading}>

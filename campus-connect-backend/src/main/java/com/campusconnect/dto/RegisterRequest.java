@@ -20,8 +20,6 @@ public class RegisterRequest {
     private String collegename;
     @NotNull(message = "Role is required")
     private Role role;
-    @NotBlank(message = "reCAPTCHA token is required")
-    private String recaptchaToken;
 
     public RegisterRequest() {}
 
@@ -39,7 +37,4 @@ public class RegisterRequest {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
-
-    public String getRecaptchaToken() { return recaptchaToken; }
-    public void setRecaptchaToken(String recaptchaToken) { this.recaptchaToken = recaptchaToken; }
 }
