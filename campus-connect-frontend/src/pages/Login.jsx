@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { useGoogleReCaptcha } from '@react-recaptcha-v3/react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const from = location.state?.from?.pathname || '/events';
 
@@ -33,7 +35,14 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const response = await authService.login({ email, password });
+      // Execute reCAPTCHA
+      const token = await executeRecaptcha('login');
+
+      const response = await authService.login({ 
+        email, 
+        password,
+        recaptchaToken: token 
+      });
       login(response.token, response.user);
       
       toast({
@@ -101,11 +110,11 @@ const Login = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12"
+                  className="pl-12 pr-10"
                   required
                 />
                 <button
@@ -113,38 +122,33 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
-              </div>
-              <div className="mt-2 text-right">
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </Link>
               </div>
             </div>
 
-            <Button type="submit" variant="hero" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent" />
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in'}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
 
-          <p className="mt-8 text-center text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:underline">
+            <Link to="/register" className="font-semibold text-primary hover:underline">
               Sign up
             </Link>
           </p>
 
-          {/* <p className="mt-4 text-center text-xs text-muted-foreground">
-            Demo: Use any email with "admin" to login as Club Admin
-          </p> */}
+          <div className="mt-8 text-xs text-muted-foreground text-center">
+            This site is protected by reCAPTCHA and the Google
+            <a href="https://policies.google.com/privacy" className="hover:underline"> Privacy Policy</a> and
+            <a href="https://policies.google.com/terms" className="hover:underline"> Terms of Service</a> apply.
+          </div>
         </div>
       </div>
 
@@ -153,15 +157,11 @@ const Login = () => {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         
         <div className="relative text-center text-primary-foreground">
-          <div className="w-24 h-24 rounded-2xl bg-primary-foreground/20 backdrop-blur flex items-center justify-center mx-auto mb-8 animate-float">
-            <Calendar className="h-12 w-12" />
-          </div>
           <h2 className="font-display text-4xl font-bold mb-4">
-            Connect with Campus
+            Welcome back to CampusConnect
           </h2>
-          <p className="text-primary-foreground/80 max-w-md text-lg">
-            Discover events from 50+ colleges. Join workshops, hackathons, 
-            cultural fests, and more.
+          <p className="text-primary-foreground/90 max-w-md text-lg">
+            Discover, attend, and create amazing events on your campus.
           </p>
         </div>
       </div>
