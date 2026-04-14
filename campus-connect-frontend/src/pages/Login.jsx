@@ -6,18 +6,15 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-import { useGoogleReCaptcha } from '@react-recaptcha-v3/react';
-
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const from = location.state?.from?.pathname || '/events';
 
@@ -35,14 +32,12 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      // Execute reCAPTCHA
-      const token = await executeRecaptcha('login');
-
-      const response = await authService.login({ 
+      const loginPayload = {
         email, 
         password,
-        recaptchaToken: token 
-      });
+      };
+
+      const response = await authService.login(loginPayload);
       login(response.token, response.user);
       
       toast({
@@ -54,7 +49,7 @@ const Login = () => {
     } catch (error) {
       toast({
         title: 'Login Failed',
-        description: error.response?.data?.message || 'Invalid email or password. Please try again.',
+        description: error.response?.data?.message || error.message || 'Invalid email or password. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -144,11 +139,7 @@ const Login = () => {
             </Link>
           </p>
 
-          <div className="mt-8 text-xs text-muted-foreground text-center">
-            This site is protected by reCAPTCHA and the Google
-            <a href="https://policies.google.com/privacy" className="hover:underline"> Privacy Policy</a> and
-            <a href="https://policies.google.com/terms" className="hover:underline"> Terms of Service</a> apply.
-          </div>
+
         </div>
       </div>
 

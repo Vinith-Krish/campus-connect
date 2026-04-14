@@ -7,8 +7,6 @@ import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useGoogleReCaptcha } from '@react-recaptcha-v3/react';
-
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,7 +18,6 @@ const Register = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,17 +42,15 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      // Execute reCAPTCHA
-      const token = await executeRecaptcha('register');
-
-      const response = await authService.register({ 
+      const registerPayload = {
         name, 
         email, 
         collegename, 
         password, 
         role,
-        recaptchaToken: token
-      });
+      };
+
+      const response = await authService.register(registerPayload);
       login(response.token, response.user);
       
       toast({
@@ -67,7 +62,7 @@ const Register = () => {
     } catch (error) {
       toast({
         title: 'Registration Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        description: error.response?.data?.message || error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -229,11 +224,7 @@ const Register = () => {
             </Link>
           </p>
 
-          <div className="mt-8 text-xs text-muted-foreground text-center">
-            This site is protected by reCAPTCHA and the Google
-            <a href="https://policies.google.com/privacy" className="hover:underline"> Privacy Policy</a> and
-            <a href="https://policies.google.com/terms" className="hover:underline"> Terms of Service</a> apply.
-          </div>
+
         </div>
       </div>
     </div>
