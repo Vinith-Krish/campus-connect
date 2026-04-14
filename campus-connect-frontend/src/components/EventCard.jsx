@@ -1,13 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, Users, Tag } from 'lucide-react';
-
-const categoryColors = {
-  Tech: 'bg-blue-500 text-white',
-  Cultural: 'bg-rose-500 text-white',
-  Sports: 'bg-green-500 text-white',
-  Workshop: 'bg-amber-500 text-white',
-};
+import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
 
 const EventCard = ({ event }) => {
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
@@ -32,8 +26,8 @@ const EventCard = ({ event }) => {
               <Calendar className="h-12 w-12 text-primary-foreground/50" />
             </div>
           )}
-          <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${categoryColors[event.category] || 'bg-muted text-muted-foreground'}`}>
-            {event.category}
+          <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${getCategoryClassName(event.category)}`}>
+            {normalizeCategory(event.category)}
           </span>
         </div>
 

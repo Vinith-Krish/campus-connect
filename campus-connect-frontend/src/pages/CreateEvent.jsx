@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
+import { normalizeCategory } from '../lib/eventUtils';
 import {
   Calendar,
   Clock,
@@ -28,6 +29,16 @@ const CreateEvent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [loadingEvent, setLoadingEvent] = useState(!!eventId);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    venue: '',
+    category: '',
+    collegename: '',
+    imageUrl: '',
+  });
   const isEditMode = !!eventId;
 
   // Load event data if in edit mode
@@ -43,7 +54,7 @@ const CreateEvent = () => {
             date: event.date || '',
             time: event.time || '',
             venue: event.venue || '',
-            category: event.category || '',
+            category: normalizeCategory(event.category),
             collegename: event.collegename || '',
             imageUrl: event.imageUrl || '',
           });
@@ -99,15 +110,15 @@ const CreateEvent = () => {
 
     try {
       // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'campus-connect'); // You'll need to create this in Cloudinary
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('upload_preset', 'campus-connect'); // You'll need to create this in Cloudinary
       
       const response = await fetch(
         'https://api.cloudinary.com/v1_1/dh4roff76/image/upload', // Replace with your cloud name
         {
           method: 'POST',
-          body: formData,
+          body: uploadData,
         }
       );
 

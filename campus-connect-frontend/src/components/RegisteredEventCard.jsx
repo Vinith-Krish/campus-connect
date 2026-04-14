@@ -4,13 +4,7 @@ import { Calendar, MapPin, Clock, Users, X, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from '../hooks/use-toast';
 import { eventService } from '../services/eventService';
-
-const categoryColors = {
-  Tech: 'bg-blue-500 text-white',
-  Cultural: 'bg-rose-500 text-white',
-  Sports: 'bg-green-500 text-white',
-  Workshop: 'bg-amber-500 text-white',
-};
+import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
 
 const RegisteredEventCard = ({ event, onUnregister }) => {
   const { toast } = useToast();
@@ -64,8 +58,8 @@ const RegisteredEventCard = ({ event, onUnregister }) => {
               <Calendar className="h-12 w-12 text-primary-foreground/50" />
             </div>
           )}
-          <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${categoryColors[event.category] || 'bg-muted text-muted-foreground'}`}>
-            {event.category}
+          <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${getCategoryClassName(event.category)}`}>
+            {normalizeCategory(event.category)}
           </span>
         </div>
 

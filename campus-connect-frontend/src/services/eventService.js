@@ -1,38 +1,66 @@
 import axiosInstance from './axiosInstance';
+import { normalizeEvent } from '../lib/eventUtils';
+
+const normalizeEventList = (events) => events.map((event) => normalizeEvent(event));
+const normalizeEventPage = (pageData) => {
+  if (Array.isArray(pageData)) {
+    return {
+      content: normalizeEventList(pageData),
+      totalElements: pageData.length,
+      totalPages: pageData.length > 0 ? 1 : 0,
+      size: pageData.length,
+      number: 0,
+    };
+  }
+
+  return {
+    ...pageData,
+    content: Array.isArray(pageData?.content) ? normalizeEventList(pageData.content) : [],
+  };
+};
 
 export const eventService = {
-  getAllEvents: async (search = '', category = '') => {
-    let url = '/events';
+  getAllEvents: async ({
+    search = '',
+    category = '',
+    page = 0,
+    size = 12,
+    sortBy = 'date',
+    direction = 'asc',
+  } = {}) => {
     const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (category) params.append('category', category.toUpperCase());
-    if (params.toString()) url += `?${params}`;
+    params.append('search', search ?? '');
+    params.append('category', category ? String(category).toUpperCase() : '');
+    params.append('page', String(page));
+    params.append('size', String(size));
+    params.append('sortBy', sortBy || 'date');
+    params.append('direction', direction || 'asc');
     
-    const response = await axiosInstance.get(url);
-    return response.data;
+    const response = await axiosInstance.get(`/events?${params.toString()}`);
+    return normalizeEventPage(response.data);
   },
 
   getEventById: async (id) => {
     const response = await axiosInstance.get(`/events/${id}`);
-    return response.data;
+    return normalizeEvent(response.data);
   },
 
   createEvent: async (eventData) => {
     const payload = {
       ...eventData,
-      category: eventData.category.toUpperCase()
+      category: (eventData.category || '').toUpperCase()
     };
     const response = await axiosInstance.post('/events', payload);
-    return response.data;
+    return normalizeEvent(response.data);
   },
 
   updateEvent: async (eventId, eventData) => {
     const payload = {
       ...eventData,
-      category: eventData.category.toUpperCase()
+      category: (eventData.category || '').toUpperCase()
     };
     const response = await axiosInstance.put(`/events/${eventId}`, payload);
-    return response.data;
+    return normalizeEvent(response.data);
   },
 
   registerForEvent: async (eventId) => {
@@ -55,6 +83,6 @@ export const eventService = {
 
   getMyCreatedEvents: async () => {
     const response = await axiosInstance.get('/events/my-events');
-    return response.data;
+    return Array.isArray(response.data) ? normalizeEventList(response.data) : [];
   }
 };

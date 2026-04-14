@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.campusconnect.dto.EventResponse;
 import com.campusconnect.dto.UserDTO;
+import com.campusconnect.dto.UserEventsResponse;
 import com.campusconnect.exception.ResourceNotFoundException;
 import com.campusconnect.model.Event;
 import com.campusconnect.model.EventInterest;
@@ -17,7 +17,6 @@ import com.campusconnect.repository.EventInterestRepository;
 import com.campusconnect.repository.EventRegistrationRepository;
 import com.campusconnect.repository.EventRepository;
 import com.campusconnect.repository.UserRepository;
-import com.campusconnect.dto.UserEventsResponse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,16 @@ public class UserService {
 	private EventRegistrationRepository registrationRepository;
 	@Autowired
 	private EventInterestRepository interestRepository;
+	
+	public User findByEmail(String email) {
+		return userRepository.findByEmail(email).orElse(null);
+	}
+	
+	@Transactional
+	public User save(User user) {
+		return userRepository.save(user);
+	}
+	
 	public UserEventsResponse getMyEvents(Long userId) {
 	    // Verify user exists
 	    User user = userRepository.findById(userId)

@@ -29,11 +29,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     	
     	@Query("""
     			SELECT e FROM Event e
-    			WHERE (:search IS NULL OR
-    			      LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
-    			      LOWER(e.collegename) LIKE LOWER(CONCAT('%', :search, '%')) OR
-    			      LOWER(e.venue) LIKE LOWER(CONCAT('%', :search, '%')))
+    			WHERE (CAST(:search AS text) IS NULL OR
+    			      LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')) OR
+    			      LOWER(e.collegename) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')) OR
+    			      LOWER(e.venue) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
     			AND (:category IS NULL OR e.category = :category)
+    			ORDER BY e.date DESC
     			""")
     			Page<Event> searchEvents(@Param("search") String search,
     			                         @Param("category") Category category,

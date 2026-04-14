@@ -44,21 +44,57 @@ public class EventService {
 	private UserRepository userRepository;
 	// paginated version to match controller
 	public Page<EventResponse> getAllEvents(String search, Category category, int page, int size, String sortBy, String direction) {
-	    Sort sort = "desc".equalsIgnoreCase(direction)
-	            ? Sort.by(sortBy).descending()
-	            : Sort.by(sortBy).ascending();
+	    try {
+	        // Normalize search parameter
+	        String normalizedSearch = (search == null || search.isBlank()) ? null : search.trim();
+	        
+	        // Validate sort field - only allow specific safe fields
+	        String validSortBy = validateAndGetSortField(sortBy);
+	        
+	        // Create sort object
+	        Sort sort = "desc".equalsIgnoreCase(direction)
+	                ? Sort.by(validSortBy).descending()
+	                : Sort.by(validSortBy).ascending();
 
-	    Pageable pageable = PageRequest.of(page, size, sort);
+	        Pageable pageable = PageRequest.of(page, size, sort);
 
-	    String normalizedSearch = (search == null || search.isBlank()) ? null : search.trim();
+	        Page<Event> events = eventRepository.searchEvents(normalizedSearch, category, pageable);
 
-	    Page<Event> events = eventRepository.searchEvents(normalizedSearch, category, pageable);
-
-	    return events.map(event -> {
-	        Long regCount = registrationRepository.countByEventId(event.getId());
-	        Long intCount = interestRepository.countByEventId(event.getId());
-	        return EventResponse.fromEntity(event, regCount, intCount);
-	    });
+	        return events.map(event -> {
+	            Long regCount = registrationRepository.countByEventId(event.getId());
+	            Long intCount = interestRepository.countByEventId(event.getId());
+	            return EventResponse.fromEntity(event, regCount, intCount);
+	        });
+	    } catch (Exception e) {
+	        log.error("Error fetching all events", e);
+	        throw e;
+	    }
+	}
+	
+	/**
+	 * Validates sort field to prevent injection attacks and invalid column references
+	 * @param sortBy the sort field name
+	 * @return validated sort field or default "date"
+	 */
+	private String validateAndGetSortField(String sortBy) {
+	    if (sortBy == null || sortBy.isBlank()) {
+	        return "date";
+	    }
+	    
+	    String field = sortBy.trim().toLowerCase();
+	    // Whitelist of allowed sort fields
+	    switch (field) {
+	        case "id":
+	        case "title":
+	        case "date":
+	        case "createdat":
+	        case "createdAt":
+	        case "category":
+	            return field.equals("createdat") ? "createdAt" : field;
+	        default:
+	            log.warn("Invalid sort field requested: {}, defaulting to 'date'", sortBy);
+	            return "date";
+	    }
 	}
 
 	public EventActionResponse registerForEvent(Long eventId, String userEmail) {

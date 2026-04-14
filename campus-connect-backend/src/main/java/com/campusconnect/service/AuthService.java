@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.campusconnect.exception.BadRequestException;
 import com.campusconnect.exception.UnauthorizedException;
 import com.campusconnect.model.User;
+import com.campusconnect.model.Role;
 
 @Service
 @Slf4j
@@ -36,7 +37,7 @@ public class AuthService {
 		user.setPassword(passwordEncoder.encode(request.getPassword()));
 		user.setName(request.getName());
 		user.setCollegename(request.getCollegename());
-		user.setRole(request.getRole());
+		user.setRole(Role.valueOf(request.getRole().toUpperCase()));
 		// Save user to database
 		User savedUser = userRepository.save(user);
 		// Generate JWT token

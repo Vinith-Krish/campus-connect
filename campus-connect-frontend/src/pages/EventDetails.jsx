@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
+import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
 import {
   Calendar,
   Clock,
@@ -18,13 +19,6 @@ import {
   Tag,
   Edit,
 } from 'lucide-react';
-
-const categoryColors = {
-  Tech: 'bg-blue-500 text-white',
-  Cultural: 'bg-rose-500 text-white',
-  Sports: 'bg-green-500 text-white',
-  Workshop: 'bg-amber-500 text-white',
-};
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -203,8 +197,8 @@ const EventDetails = () => {
               <div className="absolute inset-0 gradient-primary opacity-80 flex items-center justify-center">
                 <Calendar className="h-20 w-20 text-primary-foreground/30" />
               </div>
-              <span className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-semibold ${categoryColors[event.category]}`}>
-                {event.category}
+              <span className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-semibold ${getCategoryClassName(event.category)}`}>
+                {normalizeCategory(event.category)}
               </span>
             </div>
 
@@ -234,7 +228,7 @@ const EventDetails = () => {
             <div className="bg-card rounded-xl p-6 border border-border">
               <h2 className="font-display text-xl font-bold text-foreground mb-4">About this event</h2>
               <div className="prose prose-muted max-w-none">
-                {event.description.split('\n').map((paragraph, index) => (
+                {(event.description || '').split('\n').map((paragraph, index) => (
                   <p key={index} className="text-muted-foreground mb-3">
                     {paragraph}
                   </p>
