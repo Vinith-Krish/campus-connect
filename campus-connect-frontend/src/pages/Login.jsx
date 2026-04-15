@@ -4,19 +4,45 @@ import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+
+const generateCaptcha = () => {
+  const isAddition = Math.random() < 0.5;
+  let first = Math.floor(Math.random() * 9) + 1;
+  let second = Math.floor(Math.random() * 9) + 1;
+
+  if (!isAddition && second > first) {
+    [first, second] = [second, first];
+  }
+
+  return {
+    question: `${first} ${isAddition ? '+' : '-'} ${second} = ?`,
+    answer: isAddition ? first + second : first - second,
+  };
+};
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [captcha, setCaptcha] = useState(() => generateCaptcha());
+  const [captchaInput, setCaptchaInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
+  const hasCredentials = Boolean(email.trim() && password.trim());
+  const isCaptchaValid = hasCredentials && captchaInput.trim() !== '' && Number(captchaInput) === captcha.answer;
+
   const from = location.state?.from?.pathname || '/events';
+
+  const refreshCaptcha = () => {
+    setCaptcha(generateCaptcha());
+    setCaptchaInput('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +53,16 @@ const Login = () => {
         description: 'Please fill in all fields',
         variant: 'destructive',
       });
+      return;
+    }
+
+    if (!isCaptchaValid) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please solve the captcha correctly before signing in',
+        variant: 'destructive',
+      });
+      refreshCaptcha();
       return;
     }
 
@@ -52,6 +88,7 @@ const Login = () => {
         description: error.response?.data?.message || error.message || 'Invalid email or password. Please try again.',
         variant: 'destructive',
       });
+      refreshCaptcha();
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +143,7 @@ const Login = () => {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-12 pr-10"
@@ -124,9 +161,61 @@ const Login = () => {
                   )}
                 </button>
               </div>
+              <div className="mt-2 text-right">
+                <Link
+                  to={{
+                    pathname: '/forgot-password',
+                    search: email.trim() ? `?email=${encodeURIComponent(email.trim())}` : '',
+                  }}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <div>
+              <label htmlFor="captcha" className="block text-sm font-medium text-foreground mb-2">
+                Verify you're human
+              </label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                <div className="h-10 px-4 rounded-md border border-border bg-muted/40 flex items-center justify-between">
+                  <span className="font-semibold text-foreground tracking-wide">{captcha.question}</span>
+                  <button
+                    type="button"
+                    onClick={refreshCaptcha}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Refresh captcha"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Input
+                    id="captcha"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Answer"
+                    value={captchaInput}
+                    onChange={(e) => setCaptchaInput(e.target.value.replace(/[^0-9-]/g, ''))}
+                    className="pr-10"
+                    required
+                    disabled={!hasCredentials}
+                  />
+                  {isCaptchaValid && (
+                    <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                  )}
+                </div>
+              </div>
+              {!hasCredentials && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Enter email and password first to solve captcha.
+                </p>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading || !isCaptchaValid}>
               {isLoading ? 'Signing in...' : 'Sign in'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

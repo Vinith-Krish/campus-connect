@@ -84,5 +84,17 @@ export const eventService = {
   getMyCreatedEvents: async () => {
     const response = await axiosInstance.get('/events/my-events');
     return Array.isArray(response.data) ? normalizeEventList(response.data) : [];
+  },
+
+  downloadRegistrationsExcel: async (eventId) => {
+    const response = await axiosInstance.get(`/events/${eventId}/registrations/export`, {
+      responseType: 'blob',
+    });
+
+    return {
+      blob: response.data,
+      contentType: response.headers['content-type'],
+      contentDisposition: response.headers['content-disposition'],
+    };
   }
 };

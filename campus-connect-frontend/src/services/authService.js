@@ -41,6 +41,14 @@ export const authService = {
     return response.data;
   },
 
+  resetPasswordDirect: async (email, newPassword) => {
+    const response = await axios.post('/auth/reset-password-direct', {
+      email,
+      newPassword,
+    });
+    return response.data;
+  },
+
   getToken: () => localStorage.getItem('token'),
 
   getUser: () => {

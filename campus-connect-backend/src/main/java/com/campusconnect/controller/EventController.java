@@ -3,7 +3,9 @@ package com.campusconnect.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -110,5 +112,20 @@ public class EventController {
 
         eventService.unregisterUserFromEvent(eventId, userDetails.getUsername());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{eventId}/registrations/export")
+    @PreAuthorize("hasRole('CLUB_ADMIN')")
+    public ResponseEntity<byte[]> exportRegisteredStudents(
+            @PathVariable Long eventId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        byte[] excelFile = eventService.exportRegisteredStudentsExcel(eventId, userDetails.getUsername());
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "registered_students_" + eventId + ".xlsx");
+        
+        return new ResponseEntity<>(excelFile, headers, HttpStatus.OK);
     }
 }

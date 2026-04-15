@@ -16,20 +16,25 @@ import {
   Heart,
   CheckCircle,
   Loader2,
-  Tag,
   Edit,
+  Download,
 } from 'lucide-react';
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const isStudent = user?.role === 'STUDENT';
+  const isAdmin = user?.role === 'CLUB_ADMIN';
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isInterested, setIsInterested] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const isOwnerAdmin = Boolean(user && isAdmin && user.id === event?.organizerId);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -66,6 +71,15 @@ const EventDetails = () => {
       return;
     }
 
+    if (!isStudent) {
+      toast({
+        title: 'Not Allowed',
+        description: 'Only students can register for events.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setActionLoading(true);
     try {
       await eventService.registerForEvent(id);
@@ -89,6 +103,15 @@ const EventDetails = () => {
   };
 
   const handleUnregister = async () => {
+    if (!isStudent) {
+      toast({
+        title: 'Not Allowed',
+        description: 'Only students can unregister from events.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setActionLoading(true);
     try {
       await eventService.unregisterFromEvent(id);
@@ -122,6 +145,15 @@ const EventDetails = () => {
       return;
     }
 
+    if (!isStudent) {
+      toast({
+        title: 'Not Allowed',
+        description: 'Only students can mark interest in events.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setActionLoading(true);
     try {
       await eventService.markInterested(id);
@@ -140,6 +172,54 @@ const EventDetails = () => {
       });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const getFileNameFromDisposition = (contentDisposition, fallbackName) => {
+    if (!contentDisposition) return fallbackName;
+    const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utf8FileNameMatch?.[1]) return decodeURIComponent(utf8FileNameMatch[1]);
+    const fileNameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+    return fileNameMatch?.[1] || fallbackName;
+  };
+
+  const handleDownloadRegistrations = async () => {
+    if (!isOwnerAdmin) {
+      toast({
+        title: 'Not Allowed',
+        description: 'Only the event creator can download registrations.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const { blob, contentDisposition } = await eventService.downloadRegistrationsExcel(id);
+      const fallbackName = `event-${id}-registrations.xlsx`;
+      const fileName = getFileNameFromDisposition(contentDisposition, fallbackName);
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      toast({
+        title: 'Download Started',
+        description: 'Registration list is being downloaded.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Download Failed',
+        description: error.response?.data?.message || 'Could not download registrations.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -211,15 +291,30 @@ const EventDetails = () => {
                   </h1>
                   <p className="mt-2 text-lg text-muted-foreground">{event.collegename}</p>
                 </div>
-                {user && user.id === event.organizerId && (
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/events/${event.id}/edit`)}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Button>
+                {isOwnerAdmin && (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadRegistrations}
+                      className="flex items-center gap-2"
+                      disabled={isExporting}
+                    >
+                      {isExporting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      Download Students
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/events/${event.id}/edit`)}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -295,7 +390,7 @@ const EventDetails = () => {
                       className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                       size="lg"
                       onClick={handleUnregister}
-                      disabled={actionLoading}
+                      disabled={actionLoading || isAdmin}
                     >
                       {actionLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -310,7 +405,7 @@ const EventDetails = () => {
                     className="w-full"
                     size="lg"
                     onClick={handleRegister}
-                    disabled={actionLoading}
+                    disabled={actionLoading || isAdmin}
                   >
                     {actionLoading ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -325,11 +420,16 @@ const EventDetails = () => {
                   className="w-full"
                   size="lg"
                   onClick={handleInterested}
-                  disabled={actionLoading}
+                  disabled={actionLoading || isAdmin}
                 >
                   <Heart className={`h-5 w-5 mr-2 ${isInterested ? 'fill-current' : ''}`} />
                   {isInterested ? 'Interested' : 'Mark Interested'}
                 </Button>
+                {isAdmin && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Event participation actions are available for students only.
+                  </p>
+                )}
               </div>
             </div>
 

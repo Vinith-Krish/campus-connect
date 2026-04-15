@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String authHeader = request.getHeader("Authorization");
 
-            // âœ… If no token â†’ allow request (IMPORTANT FIX)
+            // ✅ If no token → allow request (IMPORTANT FIX)
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
@@ -48,14 +48,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String userEmail = null;
 
-            // âœ… Safe extraction (prevents crash)
+            // ✅ Safe extraction (prevents crash)
             try {
                 userEmail = jwtService.extractUsername(jwt);
             } catch (Exception e) {
                 log.warn("Invalid JWT token");
             }
 
-            // âœ… Validate and set authentication
+            // ✅ Validate and set authentication
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
@@ -79,13 +79,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            // âœ… ALWAYS continue filter chain
+            // ✅ ALWAYS continue filter chain
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
             log.error("JWT authentication failed: {}", e.getMessage());
 
-            // âœ… IMPORTANT FIX â†’ do NOT break connection
+            // ✅ IMPORTANT FIX → do NOT break connection
             SecurityContextHolder.clearContext();
 
             // Just continue request instead of killing it
@@ -98,7 +98,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // âœ… Public endpoints (no JWT needed)
+        // ✅ Public endpoints (no JWT needed)
         return path.startsWith("/api/auth/") ||
                path.equals("/error") ||
                (path.equals("/api/events") && request.getMethod().equals("GET")) ||

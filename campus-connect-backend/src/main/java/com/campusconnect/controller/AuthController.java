@@ -12,6 +12,8 @@ import com.campusconnect.service.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -126,6 +128,54 @@ public class AuthController {
                     .body(AuthResponse.builder()
                             .success(false)
                             .message("Registration failed")
+                            .build());
+        }
+    }
+    @PostMapping("/reset-password-direct")
+    public ResponseEntity<AuthResponse> resetPasswordDirect(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String newPassword = request.get("newPassword");
+
+            if (email == null || email.isBlank() || newPassword == null || newPassword.isBlank()) {
+                return ResponseEntity.badRequest()
+                        .body(AuthResponse.builder()
+                                .success(false)
+                                .message("Email and new password are required")
+                                .build());
+            }
+
+            if (newPassword.length() < 6) {
+                return ResponseEntity.badRequest()
+                        .body(AuthResponse.builder()
+                                .success(false)
+                                .message("Password must be at least 6 characters")
+                                .build());
+            }
+
+            User user = userService.findByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(AuthResponse.builder()
+                                .success(false)
+                                .message("User not found")
+                                .build());
+            }
+
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userService.save(user);
+
+            return ResponseEntity.ok(AuthResponse.builder()
+                    .success(true)
+                    .message("Password reset successful")
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Direct password reset error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(AuthResponse.builder()
+                            .success(false)
+                            .message("Password reset failed")
                             .build());
         }
     }
