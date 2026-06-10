@@ -61,6 +61,15 @@ const EventDetails = () => {
   }, [id, navigate, toast]);
 
   const handleRegister = async () => {
+    if (isEnded) {
+      toast({
+        title: 'Event Ended',
+        description: 'This event has already ended and cannot be registered for.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!isAuthenticated) {
       toast({
         title: 'Login Required',
@@ -135,6 +144,14 @@ const EventDetails = () => {
   };
 
   const handleInterested = async () => {
+    if (isEnded) {
+      toast({
+        title: 'Event Ended',
+        description: 'This event has already ended and cannot be marked as interested.',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!isAuthenticated) {
       toast({
         title: 'Login Required',
@@ -405,6 +422,10 @@ const EventDetails = () => {
                       )}
                     </Button>
                   </div>
+                ) : isEnded ? (
+                  <Button variant="outline" className="w-full" size="lg" disabled>
+                    Event Ended
+                  </Button>
                 ) : (
                   <Button
                     variant="hero"
@@ -426,7 +447,7 @@ const EventDetails = () => {
                   className="w-full"
                   size="lg"
                   onClick={handleInterested}
-                  disabled={actionLoading || isAdmin}
+                  disabled={actionLoading || isAdmin || isEnded}
                 >
                   <Heart className={`h-5 w-5 mr-2 ${isInterested ? 'fill-current' : ''}`} />
                   {isInterested ? 'Interested' : 'Mark Interested'}
