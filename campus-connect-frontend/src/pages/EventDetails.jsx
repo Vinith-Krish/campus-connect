@@ -254,6 +254,7 @@ const EventDetails = () => {
     month: 'long',
     day: 'numeric',
   });
+  const isEnded = new Date(event.date) < new Date();
 
   return (
     <div className="min-h-screen bg-background">
@@ -280,6 +281,11 @@ const EventDetails = () => {
               <span className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-semibold ${getCategoryClassName(event.category)}`}>
                 {normalizeCategory(event.category)}
               </span>
+              {isEnded && (
+                <span className="absolute top-4 left-4 px-4 py-1.5 rounded-full text-sm font-semibold bg-white text-foreground border border-border shadow-sm">
+                  Ended
+                </span>
+              )}
             </div>
 
             {/* Title */}

@@ -9,6 +9,7 @@ const EventCard = ({ event }) => {
     month: 'short',
     day: 'numeric',
   });
+  const isEnded = new Date(event.date) < new Date();
 
   return (
     <Link to={`/events/${event.id}`}>
@@ -29,6 +30,11 @@ const EventCard = ({ event }) => {
           <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${getCategoryClassName(event.category)}`}>
             {normalizeCategory(event.category)}
           </span>
+          {isEnded && (
+            <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold bg-white text-foreground border border-border shadow-sm">
+              Ended
+            </span>
+          )}
         </div>
 
         {/* Event Content */}

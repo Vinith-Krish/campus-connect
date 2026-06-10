@@ -15,6 +15,7 @@ const RegisteredEventCard = ({ event, onUnregister }) => {
     month: 'short',
     day: 'numeric',
   });
+  const isEnded = new Date(event.date) < new Date();
 
   const handleUnregister = async (e) => {
     e.preventDefault(); // Prevent navigation to event details
@@ -61,6 +62,11 @@ const RegisteredEventCard = ({ event, onUnregister }) => {
           <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${getCategoryClassName(event.category)}`}>
             {normalizeCategory(event.category)}
           </span>
+          {isEnded && (
+            <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold bg-white text-foreground border border-border shadow-sm">
+              Ended
+            </span>
+          )}
         </div>
 
         {/* Event Content */}
