@@ -40,7 +40,6 @@ A modern event management platform connecting students and clubs across college 
 - **shadcn/ui** - High-quality component library
 - **Lucide React** - Beautiful icon set
 - **Axios** - Promise-based HTTP client
-- **Google reCAPTCHA v3** - Bot prevention and form protection
 
 ### Backend
 - **Spring Boot 3.x** - Enterprise Java framework
@@ -100,10 +99,6 @@ spring.jpa.show-sql=true
 jwt.secret=your_super_secret_key_min_256_bits
 jwt.expiration=86400000
 
-# reCAPTCHA Configuration
-recaptcha.secret.key=your_recaptcha_secret_key
-recaptcha.score.threshold=0.5
-
 # Server Configuration
 server.port=8080
 ```
@@ -134,21 +129,6 @@ bun run dev
 ```
 
 Frontend runs at `http://localhost:5173`
-
-**reCAPTCHA Configuration:**
-
-Create a `.env.local` file in the frontend directory:
-
-```env
-VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-```
-
-To get your reCAPTCHA keys:
-1. Go to [Google reCAPTCHA Admin Console](https://www.google.com/recaptcha/admin)
-2. Create a new site with reCAPTCHA v3
-3. Copy your Site Key and Server Secret
-4. Add Site Key to `.env.local`
-5. Backend developers will need the Secret Key in `application.properties`
 
 ## 📁 Project Structure
 
@@ -262,7 +242,6 @@ if (category) params.append('category', category.toUpperCase());
 - **CORS Configuration** - Controlled cross-origin requests
 - **SQL Injection Prevention** - Parameterized queries
 - **Auto Logout** - 401 responses trigger logout
-- **reCAPTCHA v3 Protection** - Bot detection on login, registration, and password reset forms
 
 ## 🎯 User Roles
 
