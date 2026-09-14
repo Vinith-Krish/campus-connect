@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/events" className="flex items-center gap-2 group">
+          <Link to="/" aria-label="CampusConnect home" className="flex items-center gap-2 group">
             <div className="p-2 rounded-xl gradient-primary">
               <Calendar className="h-5 w-5 text-primary-foreground" />
             </div>
@@ -54,7 +54,7 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-6">
                 <Button variant="ghost" asChild>
                   <Link to="/login">Login</Link>
                 </Button>
@@ -69,6 +69,9 @@ const Navbar = () => {
           <button
             className="md:hidden p-2 text-foreground"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -76,7 +79,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-slide-up">
+          <div id="mobile-navigation" className="md:hidden py-4 border-t border-border animate-slide-up">
             <div className="flex flex-col gap-3">
               <Link
                 to="/events"

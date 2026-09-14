@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import Navbar from '../components/Navbar';
 import { Calendar, Users, Sparkles, ArrowRight, MapPin, Bell } from 'lucide-react';
 
 const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background gradient */}
