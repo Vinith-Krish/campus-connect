@@ -19,6 +19,10 @@ public class ErrorResponse {
 	private String error;
 	private String message;
 	private String path;
+	public static ErrorResponse of(HttpStatus status, String message) {
+	    return of(status, message, null);
+	}
+
 	public static ErrorResponse of(HttpStatus status, String message, String path) {
 	    return ErrorResponse.builder()
 	        .timestamp(LocalDateTime.now())

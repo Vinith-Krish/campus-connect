@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, User, ArrowRight, Users, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -71,7 +72,7 @@ const Register = () => {
     } catch (error) {
       toast({
         title: 'Registration Failed',
-        description: error.response?.data?.message || error.message || 'Something went wrong. Please try again.',
+        description: getUserFriendlyErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

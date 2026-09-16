@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 
 const ForgotPassword = () => {
   const [searchParams] = useSearchParams();
@@ -67,7 +68,7 @@ const ForgotPassword = () => {
     } catch (error) {
       toast({
         title: 'Reset Failed',
-        description: error.response?.data?.message || 'Unable to reset password. Please try again.',
+        description: getUserFriendlyErrorMessage(error, 'Unable to reset password. Please try again.'),
         variant: 'destructive',
       });
     } finally {

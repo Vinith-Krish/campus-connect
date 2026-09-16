@@ -1,8 +1,5 @@
 package com.campusconnect.exception;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +21,11 @@ public class GlobalExceptionHandler {
 	        ResourceNotFoundException ex, 
 	        WebRequest request) {
 	    
-	    log.error("Resource not found: {}", ex.getMessage());
+	    log.error("Resource not found", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.NOT_FOUND,
-	        ex.getMessage(),
-	        request.getDescription(false).replace("uri=", "")
+	        "The requested resource was not found."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
@@ -42,12 +38,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle UnauthorizedException (401)
 	    // Returns: ErrorResponse with 401 status
 	    
-	    log.error("Unauthorized: {}", ex.getMessage());
+	    log.error("Unauthorized request", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.UNAUTHORIZED,
-	        ex.getMessage(),
-	        request.getDescription(false).replace("uri=", "")
+	        "Authentication failed. Please check your credentials and try again."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
@@ -60,12 +55,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle BadRequestException (400)
 	    // Returns: ErrorResponse with 400 status
 	    
-	    log.error("Bad request: {}", ex.getMessage());
+	    log.error("Bad request", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.BAD_REQUEST,
-	        ex.getMessage(),
-	        request.getDescription(false).replace("uri=", "")
+	        "The request could not be processed. Please check your input and try again."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -78,12 +72,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle ForbiddenException (403)
 	    // Returns: ErrorResponse with 403 status
 	    
-	    log.error("Forbidden: {}", ex.getMessage());
+	    log.error("Forbidden request", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.FORBIDDEN,
-	        ex.getMessage(),
-	        request.getDescription(false).replace("uri=", "")
+	        "You do not have permission to perform this action."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
@@ -96,21 +89,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle validation errors from @Valid annotation (400)
 	    // Returns: ErrorResponse with 400 status and validation details
 	    
-	    log.error("Validation failed: {}", ex.getMessage());
-	    
-	    // Collect all validation error messages
-	    List<String> errors = ex.getBindingResult()
-	        .getFieldErrors()
-	        .stream()
-	        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-	        .collect(Collectors.toList());
-	    
-	    String errorMessage = String.join(", ", errors);
+	    log.error("Validation failed", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.BAD_REQUEST,
-	        errorMessage,
-	        request.getDescription(false).replace("uri=", "")
+	        "The request contains invalid data. Please check your input and try again."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -123,17 +106,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle database constraint violations (409)
 	    // Returns: ErrorResponse with 409 status
 	    
-	    log.error("Data integrity violation: {}", ex.getMessage());
-	    
-	    String message = "Database constraint violation";
-	    if (ex.getMessage().contains("Duplicate entry")) {
-	        message = "Duplicate entry - record already exists";
-	    }
+	    log.error("Data integrity violation", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.CONFLICT,
-	        message,
-	        request.getDescription(false).replace("uri=", "")
+	        "The request could not be completed because it conflicts with existing data."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
@@ -151,7 +128,7 @@ public class GlobalExceptionHandler {
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.INTERNAL_SERVER_ERROR,
 	        "An unexpected error occurred. Please try again later.",
-	        request.getDescription(false).replace("uri=", "")
+	        null
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -164,12 +141,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle Spring Security authentication exceptions (401)
 	    // Returns: ErrorResponse with 401 status
 	    
-	    log.error("Authentication failed: {}", ex.getMessage());
+	    log.error("Authentication failed", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.UNAUTHORIZED,
-	        "Authentication failed: " + ex.getMessage(),
-	        request.getDescription(false).replace("uri=", "")
+	        "Authentication failed. Please sign in again."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
@@ -182,12 +158,11 @@ public class GlobalExceptionHandler {
 	    // Description: Handle Spring Security access denied exceptions (403)
 	    // Returns: ErrorResponse with 403 status
 	    
-	    log.error("Access denied: {}", ex.getMessage());
+	    log.error("Access denied", ex);
 	    
 	    ErrorResponse errorResponse = ErrorResponse.of(
 	        HttpStatus.FORBIDDEN,
-	        "Access denied: You don't have permission to access this resource",
-	        request.getDescription(false).replace("uri=", "")
+	        "You do not have permission to access this resource."
 	    );
 	    
 	    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
 import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 import {
   Calendar,
   Clock,
@@ -103,7 +104,7 @@ const EventDetails = () => {
     } catch (error) {
       toast({
         title: 'Registration Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        description: getUserFriendlyErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -135,7 +136,7 @@ const EventDetails = () => {
     } catch (error) {
       toast({
         title: 'Unregister Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        description: getUserFriendlyErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -232,7 +233,7 @@ const EventDetails = () => {
     } catch (error) {
       toast({
         title: 'Download Failed',
-        description: error.response?.data?.message || 'Could not download registrations.',
+        description: getUserFriendlyErrorMessage(error, 'Could not download registrations.'),
         variant: 'destructive',
       });
     } finally {

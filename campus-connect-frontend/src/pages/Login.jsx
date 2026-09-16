@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Mail, Lock, ArrowRight, Eye, EyeOff, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 
 const generateCaptcha = () => {
   const isAddition = Math.random() < 0.5;
@@ -85,7 +86,7 @@ const Login = () => {
     } catch (error) {
       toast({
         title: 'Login Failed',
-        description: error.response?.data?.message || error.message || 'Invalid email or password. Please try again.',
+        description: getUserFriendlyErrorMessage(error, 'Invalid email or password. Please try again.'),
         variant: 'destructive',
       });
       refreshCaptcha();

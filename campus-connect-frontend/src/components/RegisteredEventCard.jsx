@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { useToast } from '../hooks/use-toast';
 import { eventService } from '../services/eventService';
 import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 
 const RegisteredEventCard = ({ event, onUnregister }) => {
   const { toast } = useToast();
@@ -35,7 +36,7 @@ const RegisteredEventCard = ({ event, onUnregister }) => {
     } catch (error) {
       toast({
         title: 'Unregister Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        description: getUserFriendlyErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

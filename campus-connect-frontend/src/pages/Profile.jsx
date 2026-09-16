@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 
 const Profile = () => {
   const { user, login } = useAuth();
@@ -82,7 +83,7 @@ const Profile = () => {
   } catch (error) {
     toast({
       title: "Update Failed",
-      description: error.response?.data?.message || "Something went wrong. Please try again.",
+      description: getUserFriendlyErrorMessage(error),
       variant: "destructive",
     });
   } finally {

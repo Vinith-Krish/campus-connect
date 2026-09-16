@@ -7,6 +7,7 @@ import { Textarea } from '../components/ui/textarea';
 import { eventService } from '../services/eventService';
 import { useToast } from '../hooks/use-toast';
 import { normalizeCategory } from '../lib/eventUtils';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 import {
   Calendar,
   Clock,
@@ -166,7 +167,7 @@ const CreateEvent = () => {
     } catch (error) {
       toast({
         title: isEditMode ? 'Update Failed' : 'Creation Failed',
-        description: error.response?.data?.message || 'Something went wrong. Please try again.',
+        description: getUserFriendlyErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

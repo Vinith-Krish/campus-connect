@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -70,7 +71,7 @@ const ResetPassword = () => {
     } catch (error) {
       toast({
         title: 'Reset Failed',
-        description: error.response?.data?.message || 'Failed to reset password. The link may have expired.',
+        description: getUserFriendlyErrorMessage(error, 'Failed to reset password. The link may have expired.'),
         variant: 'destructive',
       });
     } finally {

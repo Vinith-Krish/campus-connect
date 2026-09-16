@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 userEmail = jwtService.extractUsername(jwt);
             } catch (Exception e) {
-                log.warn("Invalid JWT token");
+                log.warn("Invalid JWT token", e);
             }
 
             // ✅ Validate and set authentication
@@ -83,7 +83,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            log.error("JWT authentication failed: {}", e.getMessage());
+            log.error("JWT authentication failed", e);
 
             // ✅ IMPORTANT FIX → do NOT break connection
             SecurityContextHolder.clearContext();
