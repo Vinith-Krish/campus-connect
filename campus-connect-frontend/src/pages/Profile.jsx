@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import EventCard from '../components/EventCard';
 import RegisteredEventCard from '../components/RegisteredEventCard';
+import InterestedEventCard from '../components/InterestedEventCard';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { eventService } from '../services/eventService';
@@ -94,6 +95,10 @@ const Profile = () => {
   const handleUnregisterEvent = async (eventId) => {
     // Remove the event from the local state
     setRegisteredEvents(prev => prev.filter(event => event.id !== eventId));
+  };
+
+  const handleUnmarkInterested = (eventId) => {
+    setInterestedEvents(prev => prev.filter(event => event.id !== eventId));
   };
 
   const currentEvents = isClubAdmin 
@@ -232,6 +237,11 @@ const Profile = () => {
                   <RegisteredEventCard 
                     event={event} 
                     onUnregister={handleUnregisterEvent}
+                  />
+                ) : !isClubAdmin && activeTab === 'interested' ? (
+                  <InterestedEventCard
+                    event={event}
+                    onUnmarkInterested={handleUnmarkInterested}
                   />
                 ) : (
                   <EventCard event={event} />

@@ -181,6 +181,22 @@ public class EventService {
 	    return new EventActionResponse("Successfully marked interest", eventId, user.getId());
 	}
 
+	public void removeInterest(Long eventId, String userEmail) {
+	    Event event = eventRepository.findById(eventId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+	    User user = userRepository.findByEmail(userEmail)
+	            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+	    ensureUserCanParticipateInEvents(user);
+
+	    if (!interestRepository.existsByEventIdAndUserId(eventId, user.getId())) {
+	        throw new BadRequestException("You have not marked this event as interested");
+	    }
+
+	    interestRepository.deleteByEventIdAndUserId(event.getId(), user.getId());
+	}
+
 	public void deleteEvent(Long eventId, String userEmail) {
 	    Event event = eventRepository.findById(eventId)
 	            .orElseThrow(() -> new ResourceNotFoundException("Event not found"));

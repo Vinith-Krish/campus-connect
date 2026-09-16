@@ -10,6 +10,7 @@ import com.campusconnect.model.EventInterest;
 
 public interface EventInterestRepository extends JpaRepository<EventInterest, Long> {
     boolean existsByEventIdAndUserId(Long eventId, Long userId);
+    void deleteByEventIdAndUserId(Long eventId, Long userId);
     List<EventInterest> findByUserId(Long userId);
     Long countByEventId(Long eventId);
     

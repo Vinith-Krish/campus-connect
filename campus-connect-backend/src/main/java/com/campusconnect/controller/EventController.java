@@ -112,6 +112,15 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{id}/interested")
+    public ResponseEntity<Void> removeInterest(
+            @PathVariable @Positive Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        eventService.removeInterest(id, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{eventId}/unregister")
     public ResponseEntity<Void> unregisterFromEvent(
             @PathVariable @Positive Long eventId,

@@ -52,8 +52,14 @@ const EventDetails = () => {
               (registeredEvent) => String(registeredEvent.id) === String(id)
             )
           );
+          setIsInterested(
+            (userEvents.interested || []).some(
+              (interestedEvent) => String(interestedEvent.id) === String(id)
+            )
+          );
         } else {
           setIsRegistered(false);
+          setIsInterested(false);
         }
       } catch (error) {
         console.error('Failed to fetch event:', error);
@@ -99,6 +105,10 @@ const EventDetails = () => {
         description: 'Only students can register for events.',
         variant: 'destructive',
       });
+      return;
+    }
+
+    if (isInterested) {
       return;
     }
 
@@ -187,12 +197,10 @@ const EventDetails = () => {
     setActionLoading(true);
     try {
       await eventService.markInterested(id);
-      setIsInterested(!isInterested);
+      setIsInterested(true);
       toast({
-        title: isInterested ? 'Removed from interests' : 'Marked as interested!',
-        description: isInterested 
-          ? 'This event has been removed from your interests.' 
-          : 'This event has been added to your interests.',
+        title: 'Marked as interested!',
+        description: 'This event has been added to your interests.',
       });
     } catch (error) {
       toast({
@@ -466,7 +474,8 @@ const EventDetails = () => {
                   className="w-full"
                   size="lg"
                   onClick={handleInterested}
-                  disabled={actionLoading || isAdmin || isEnded}
+                  disabled={actionLoading || isAdmin || isEnded || isInterested}
+                  aria-label={isInterested ? 'Already marked as interested' : 'Mark event as interested'}
                 >
                   <Heart className={`h-5 w-5 mr-2 ${isInterested ? 'fill-current' : ''}`} />
                   {isInterested ? 'Interested' : 'Mark Interested'}

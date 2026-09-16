@@ -77,6 +77,10 @@ export const eventService = {
     return response.data;
   },
 
+  removeInterest: async (eventId) => {
+    await axiosInstance.delete(`/events/${eventId}/interested`);
+  },
+
   deleteEvent: async (eventId) => {
     await axiosInstance.delete(`/events/${eventId}`);
   },
