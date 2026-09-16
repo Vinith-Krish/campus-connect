@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import { eventService } from '../services/eventService';
+import { userService } from '../services/userService';
 import { useToast } from '../hooks/use-toast';
 import { getCategoryClassName, normalizeCategory } from '../lib/eventUtils';
 import { getUserFriendlyErrorMessage } from '../lib/errorUtils';
@@ -43,6 +44,17 @@ const EventDetails = () => {
       try {
         const data = await eventService.getEventById(id);
         setEvent(data);
+
+        if (isAuthenticated && isStudent) {
+          const userEvents = await userService.getMyEvents();
+          setIsRegistered(
+            (userEvents.registered || []).some(
+              (registeredEvent) => String(registeredEvent.id) === String(id)
+            )
+          );
+        } else {
+          setIsRegistered(false);
+        }
       } catch (error) {
         console.error('Failed to fetch event:', error);
         toast({
@@ -59,7 +71,7 @@ const EventDetails = () => {
     if (id) {
       fetchEvent();
     }
-  }, [id, navigate, toast]);
+  }, [id, isAuthenticated, isStudent, navigate, toast]);
 
   const handleRegister = async () => {
     if (isEnded) {
@@ -405,7 +417,13 @@ const EventDetails = () => {
               <div className="mt-6 pt-6 border-t border-border space-y-3">
                 {isRegistered ? (
                   <div className="space-y-2">
-                    <Button variant="secondary" className="w-full" size="lg" disabled>
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      size="lg"
+                      disabled
+                      aria-label="You are already registered for this event"
+                    >
                       <CheckCircle className="h-5 w-5 mr-2" />
                       Registered
                     </Button>
@@ -433,7 +451,7 @@ const EventDetails = () => {
                     className="w-full"
                     size="lg"
                     onClick={handleRegister}
-                    disabled={actionLoading || isAdmin}
+                    disabled={actionLoading || isAdmin || isRegistered}
                   >
                     {actionLoading ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
