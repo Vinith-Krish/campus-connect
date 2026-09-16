@@ -2,10 +2,10 @@
 spring.application.name=campus-connect-backend
 server.port=8080
 
-#Database configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/campus_connect
-spring.datasource.username=YOUR_DB_USERNAME
-spring.datasource.password=YOUR_DB_PASSWORD
+# Database configuration
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA configuration
@@ -15,7 +15,7 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 # JWT configuration
-jwt.secret=REPLACE_WITH_YOUR_256_BIT_SECRET_KEY
+jwt.secret=${JWT_SECRET}
 jwt.expiration=86400000
 
 # CORS Configuration

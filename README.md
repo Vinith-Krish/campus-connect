@@ -86,17 +86,26 @@ cd campus-connect-backend
 # Edit: src/main/resources/application.properties
 ```
 
+Set these environment variables before starting the backend:
+
+```text
+DB_URL=jdbc:postgresql://localhost:5432/campusconnect
+DB_USER=your_username
+DB_PASSWORD=your_password
+JWT_SECRET=generate_a_random_secret_at_least_256_bits_long
+```
+
 **application.properties:**
 ```properties
 # Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/campusconnect
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
 # JWT Configuration
-jwt.secret=your_super_secret_key_min_256_bits
+jwt.secret=${JWT_SECRET}
 jwt.expiration=86400000
 
 # Server Configuration

@@ -1,6 +1,11 @@
 # Frontend
 node_modules
 
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Backend
 campus-connect-backend/target/
 campus-connect-backend/.settings/
