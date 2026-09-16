@@ -24,3 +24,16 @@ cors.allowed-origins=http://localhost:8080,http://localhost:5173
 # Logging
 logging.level.com.campusconnect=DEBUG
 logging.level.org.springframework.security=DEBUG
+
+# Rate limiting. Override these with environment variables in deployment.
+rate-limit.auth-ip-capacity=${RATE_LIMIT_AUTH_IP_CAPACITY:20}
+rate-limit.auth-account-capacity=${RATE_LIMIT_AUTH_ACCOUNT_CAPACITY:8}
+rate-limit.public-capacity=${RATE_LIMIT_PUBLIC_CAPACITY:120}
+rate-limit.authenticated-capacity=${RATE_LIMIT_AUTHENTICATED_CAPACITY:300}
+rate-limit.auth-ip-window-seconds=${RATE_LIMIT_AUTH_IP_WINDOW_SECONDS:60}
+rate-limit.auth-account-window-seconds=${RATE_LIMIT_AUTH_ACCOUNT_WINDOW_SECONDS:300}
+rate-limit.public-window-seconds=${RATE_LIMIT_PUBLIC_WINDOW_SECONDS:60}
+rate-limit.authenticated-window-seconds=${RATE_LIMIT_AUTHENTICATED_WINDOW_SECONDS:60}
+rate-limit.backoff-base-seconds=${RATE_LIMIT_BACKOFF_BASE_SECONDS:2}
+rate-limit.backoff-max-seconds=${RATE_LIMIT_BACKOFF_MAX_SECONDS:300}
+rate-limit.max-tracked-keys=${RATE_LIMIT_MAX_TRACKED_KEYS:100000}
