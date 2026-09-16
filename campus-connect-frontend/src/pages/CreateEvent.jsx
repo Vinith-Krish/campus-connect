@@ -22,6 +22,20 @@ import {
 import { cn } from '@/lib/utils';
 
 const categories = ['Tech', 'Cultural', 'Sports', 'Workshop'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+const hasImageSignature = async (file) => {
+  const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const matchesAt = (bytes, offset = 0) => bytes.every((byte, index) => header[index + offset] === byte);
+
+  const isJpeg = matchesAt([0xff, 0xd8, 0xff]);
+  const isPng = matchesAt([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const isGif = matchesAt([0x47, 0x49, 0x46, 0x38]);
+  const isWebp = matchesAt([0x52, 0x49, 0x46, 0x46])
+    && matchesAt([0x57, 0x45, 0x42, 0x50], 8);
+
+  return isJpeg || isPng || isGif || isWebp;
+};
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -87,21 +101,28 @@ const CreateEvent = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
       toast({
         title: 'Invalid File',
-        description: 'Please upload an image file',
+        description: 'Please upload a JPEG, PNG, GIF, or WebP image.',
         variant: 'destructive',
       });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > MAX_IMAGE_SIZE) {
       toast({
         title: 'File Too Large',
         description: 'Please upload an image smaller than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!(await hasImageSignature(file))) {
+      toast({
+        title: 'Invalid File',
+        description: 'The selected file is not a supported image.',
         variant: 'destructive',
       });
       return;
@@ -125,12 +146,14 @@ const CreateEvent = () => {
 
       const data = await response.json();
       
-      if (data.secure_url) {
+      if (response.ok && data.secure_url && data.resource_type === 'image') {
         setFormData((prev) => ({ ...prev, imageUrl: data.secure_url }));
         toast({
           title: 'Image Uploaded',
           description: 'Your image has been uploaded successfully',
         });
+      } else {
+        throw new Error('Image upload was rejected by the storage provider');
       }
     } catch (error) {
       toast({
