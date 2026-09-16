@@ -1,17 +1,5 @@
 package com.campusconnect.controller;
 
-import com.campusconnect.dto.AuthResponse;
-import com.campusconnect.dto.LoginRequest;
-import com.campusconnect.dto.RegisterRequest;
-import com.campusconnect.dto.UserDTO;
-import com.campusconnect.model.User;
-import com.campusconnect.model.Role;
-import com.campusconnect.service.JwtService;
-import com.campusconnect.service.UserService;
-
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +10,22 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.campusconnect.dto.AuthResponse;
+import com.campusconnect.dto.LoginRequest;
+import com.campusconnect.dto.RegisterRequest;
+import com.campusconnect.dto.UserDTO;
+import com.campusconnect.model.Role;
+import com.campusconnect.model.User;
+import com.campusconnect.service.JwtService;
+import com.campusconnect.service.UserService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -57,7 +60,11 @@ public class AuthController {
             User user = userService.findByEmail(loginRequest.getEmail());
             UserDTO userDTO = convertToDTO(user);
 
-            String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole());
+            String token = jwtService.generateToken(
+                    user.getEmail(),
+                    user.getId(),
+                    user.getRole()
+            );
 
             return ResponseEntity.ok(AuthResponse.builder()
                     .token(token)
@@ -68,13 +75,16 @@ public class AuthController {
 
         } catch (AuthenticationException e) {
             log.error("Invalid credentials for {}", loginRequest.getEmail());
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(AuthResponse.builder()
                             .success(false)
                             .message("Invalid email or password")
                             .build());
+
         } catch (Exception e) {
             log.error("Login error", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(AuthResponse.builder()
                             .success(false)
@@ -85,11 +95,12 @@ public class AuthController {
 
     // ================= REGISTER =================
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest registerRequest) {
+
         try {
             log.info("Registration attempt for email: {}", registerRequest.getEmail());
 
-            // Check existing user
             if (userService.findByEmail(registerRequest.getEmail()) != null) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(AuthResponse.builder()
@@ -98,13 +109,16 @@ public class AuthController {
                                 .build());
             }
 
-            // Create user
             User newUser = new User();
             newUser.setName(registerRequest.getName());
             newUser.setEmail(registerRequest.getEmail());
             newUser.setCollegename(registerRequest.getCollegename());
-            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-            newUser.setRole(Role.valueOf(registerRequest.getRole().toUpperCase()));
+            newUser.setPassword(
+                    passwordEncoder.encode(registerRequest.getPassword())
+            );
+            newUser.setRole(
+                    Role.valueOf(registerRequest.getRole().toUpperCase())
+            );
 
             User savedUser = userService.save(newUser);
 
@@ -124,6 +138,7 @@ public class AuthController {
 
         } catch (Exception e) {
             log.error("Registration error", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(AuthResponse.builder()
                             .success(false)
@@ -131,13 +146,17 @@ public class AuthController {
                             .build());
         }
     }
+
     @PostMapping("/reset-password-direct")
-    public ResponseEntity<AuthResponse> resetPasswordDirect(@RequestBody Map<String, String> request) {
+    public ResponseEntity<AuthResponse> resetPasswordDirect(
+            @RequestBody Map<String, String> request) {
+
         try {
             String email = request.get("email");
             String newPassword = request.get("newPassword");
 
-            if (email == null || email.isBlank() || newPassword == null || newPassword.isBlank()) {
+            if (email == null || email.isBlank()
+                    || newPassword == null || newPassword.isBlank()) {
                 return ResponseEntity.badRequest()
                         .body(AuthResponse.builder()
                                 .success(false)
@@ -154,6 +173,7 @@ public class AuthController {
             }
 
             User user = userService.findByEmail(email);
+
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(AuthResponse.builder()
@@ -172,6 +192,7 @@ public class AuthController {
 
         } catch (Exception e) {
             log.error("Direct password reset error", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(AuthResponse.builder()
                             .success(false)

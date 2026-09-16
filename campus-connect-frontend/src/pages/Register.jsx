@@ -31,6 +31,15 @@ const Register = () => {
       return;
     }
 
+    if (role === 'CLUB_ADMIN' && email.trim().toLowerCase().endsWith('@gmail.com')) {
+      toast({
+        title: 'Validation Error',
+        description: 'Club Admin accounts must use a non-Gmail college or organization email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (password.length < 6) {
       toast({
         title: 'Validation Error',
