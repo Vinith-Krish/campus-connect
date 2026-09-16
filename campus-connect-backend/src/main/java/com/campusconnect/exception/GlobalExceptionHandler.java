@@ -9,6 +9,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import jakarta.validation.ConstraintViolationException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,6 +99,36 @@ public class GlobalExceptionHandler {
 	        "The request contains invalid data. Please check your input and try again."
 	    );
 	    
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<ErrorResponse> handleConstraintViolation(
+	        ConstraintViolationException ex,
+	        WebRequest request) {
+
+	    log.error("Request constraint validation failed", ex);
+
+	    ErrorResponse errorResponse = ErrorResponse.of(
+	        HttpStatus.BAD_REQUEST,
+	        "The request contains invalid parameters. Please check your input and try again."
+	    );
+
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleTypeMismatch(
+	        MethodArgumentTypeMismatchException ex,
+	        WebRequest request) {
+
+	    log.error("Request parameter type validation failed", ex);
+
+	    ErrorResponse errorResponse = ErrorResponse.of(
+	        HttpStatus.BAD_REQUEST,
+	        "The request contains an invalid parameter. Please check your input and try again."
+	    );
+
 	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
 	// handling data integrity violation exception

@@ -1,7 +1,5 @@
 package com.campusconnect.controller;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.campusconnect.dto.AuthResponse;
 import com.campusconnect.dto.LoginRequest;
 import com.campusconnect.dto.RegisterRequest;
+import com.campusconnect.dto.ResetPasswordRequest;
 import com.campusconnect.dto.UserDTO;
 import com.campusconnect.model.Role;
 import com.campusconnect.model.User;
@@ -149,28 +148,11 @@ public class AuthController {
 
     @PostMapping("/reset-password-direct")
     public ResponseEntity<AuthResponse> resetPasswordDirect(
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody ResetPasswordRequest request) {
 
         try {
-            String email = request.get("email");
-            String newPassword = request.get("newPassword");
-
-            if (email == null || email.isBlank()
-                    || newPassword == null || newPassword.isBlank()) {
-                return ResponseEntity.badRequest()
-                        .body(AuthResponse.builder()
-                                .success(false)
-                                .message("Email and new password are required")
-                                .build());
-            }
-
-            if (newPassword.length() < 6) {
-                return ResponseEntity.badRequest()
-                        .body(AuthResponse.builder()
-                                .success(false)
-                                .message("Password must be at least 6 characters")
-                                .build());
-            }
+            String email = request.getEmail();
+            String newPassword = request.getNewPassword();
 
             User user = userService.findByEmail(email);
 

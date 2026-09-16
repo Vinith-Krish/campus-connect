@@ -19,23 +19,30 @@ import com.campusconnect.model.Category;
 import com.campusconnect.service.EventService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/api/events")
 @RequiredArgsConstructor
+@Validated
 public class EventController {
 
     private final EventService eventService;
 
     @GetMapping
     public ResponseEntity<Page<EventResponse>> getAllEvents(
-            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @Size(max = 100) String search,
             @RequestParam(required = false) Category category,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction) {
+            @RequestParam(defaultValue = "0") @Min(0) @Max(10000) int page,
+            @RequestParam(defaultValue = "12") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "date") @Pattern(regexp = "^(date|createdAt|title)$") String sortBy,
+            @RequestParam(defaultValue = "asc") @Pattern(regexp = "^(asc|desc)$") String direction) {
 
         Page<EventResponse> events = eventService.getAllEvents(search, category, page, size, sortBy, direction);
         return ResponseEntity.ok(events);
@@ -51,7 +58,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventResponse> getEventById(@PathVariable Long id) {
+    public ResponseEntity<EventResponse> getEventById(@PathVariable @Positive Long id) {
         EventResponse event = eventService.getEventById(id);
         return ResponseEntity.ok(event);
     }
@@ -69,7 +76,7 @@ public class EventController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('CLUB_ADMIN')")
     public ResponseEntity<EventResponse> updateEvent(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody EventRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
@@ -80,7 +87,7 @@ public class EventController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CLUB_ADMIN')")
     public ResponseEntity<Void> deleteEvent(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         eventService.deleteEvent(id, userDetails.getUsername());
@@ -89,7 +96,7 @@ public class EventController {
 
     @PostMapping("/{id}/register")
     public ResponseEntity<EventActionResponse> registerForEvent(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         EventActionResponse response = eventService.registerForEvent(id, userDetails.getUsername());
@@ -98,7 +105,7 @@ public class EventController {
 
     @PostMapping("/{id}/interested")
     public ResponseEntity<EventActionResponse> markInterested(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         EventActionResponse response = eventService.markInterested(id, userDetails.getUsername());
@@ -107,7 +114,7 @@ public class EventController {
 
     @DeleteMapping("/{eventId}/unregister")
     public ResponseEntity<Void> unregisterFromEvent(
-            @PathVariable Long eventId,
+            @PathVariable @Positive Long eventId,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         eventService.unregisterUserFromEvent(eventId, userDetails.getUsername());
@@ -117,7 +124,7 @@ public class EventController {
     @GetMapping("/{eventId}/registrations/export")
     @PreAuthorize("hasRole('CLUB_ADMIN')")
     public ResponseEntity<byte[]> exportRegisteredStudents(
-            @PathVariable Long eventId,
+            @PathVariable @Positive Long eventId,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         byte[] excelFile = eventService.exportRegisteredStudentsExcel(eventId, userDetails.getUsername());
